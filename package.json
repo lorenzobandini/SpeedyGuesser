@@ -1,5 +1,5 @@
 {
-  "name": "speedguess",
+  "name": "speedyguess",
   "version": "0.1.0",
   "description": "game to be played by three people where two people have to make the third person guess as many words as possible by saying one word each",
   "private": true,
