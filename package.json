@@ -1,7 +1,11 @@
 {
   "name": "speedguess",
   "version": "0.1.0",
+  "description": "game to be played by three people where two people have to make the third person guess as many words as possible by saying one word each",
   "private": true,
+  "author": "Lorenzo Bandini",
+  "keywords": ["game","words","friends"],
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "next build",
