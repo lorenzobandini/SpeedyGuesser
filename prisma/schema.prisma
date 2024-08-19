@@ -14,16 +14,20 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Match {
+    id          String      @id @default(cuid())
+    player      User        @relation(fields: [playerId], references: [id])
+    playerId    String
 
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
+    points      Int         @default(0)
 
-    @@index([name])
+    language    String      @default("it")
+    seconds     Int         @default(60)
+    passAllowed Int         @default(3)
+    
+    playedAt    DateTime    @default(now())
+    
+    @@index([playerId])
 }
 
 // Necessary for Next auth
@@ -33,12 +37,12 @@ model Account {
     type                     String
     provider                 String
     providerAccountId        String
-    refresh_token            String? // @db.Text
-    access_token             String? // @db.Text
+    refresh_token            String? 
+    access_token             String? 
     expires_at               Int?
     token_type               String?
     scope                    String?
-    id_token                 String? // @db.Text
+    id_token                 String? 
     session_state            String?
     user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
     refresh_token_expires_in Int?
@@ -62,7 +66,7 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    posts         Post[]
+    matches Match[]
 }
 
 model VerificationToken {
