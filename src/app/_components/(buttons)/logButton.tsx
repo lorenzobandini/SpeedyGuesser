@@ -10,7 +10,7 @@ export default async function LogButton() {
         href={session ? "/api/auth/signout" : "/api/auth/signin"}
         className="ml-4"
       >
-        <Button variant={session ? "destructive" : "personal"}>
+        <Button variant={session ? "personalDestructive" : "personal"}>
           {session ? "Sign out" : "Sign in"}
         </Button>
       </Link>
