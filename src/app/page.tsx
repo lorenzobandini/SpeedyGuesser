@@ -1,6 +1,7 @@
 import Navbar from "~/app/_components/navbar";
 import SettingsoButton from "./_components/(buttons)/settingsButton";
 import { Button } from "~/components/ui/button";
+import Link from 'next/link';
 
 export default async function Home() {
   return (
@@ -11,11 +12,14 @@ export default async function Home() {
           <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
             Speedy<span className="text-dark">Guesser</span>
           </h1>
+          <Link href="/select">
+
           <Button variant={"personal"} size={"xl"}>
             <div className="text-3x">
             Play
             </div>
           </Button>
+          </Link>
         </div>
       </div>
       <div className="flex justify-end p-2">
