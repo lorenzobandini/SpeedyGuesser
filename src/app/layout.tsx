@@ -26,13 +26,13 @@ export default function RootLayout({
     <html lang="en" className={`${fontSans.variable} h-full`}>
       <body
         className={cn(
-          "flex flex-col h-full bg-main font-sans antialiased text-light",
+          "flex flex-col h-full max-h-screen overflow-hidden bg-main font-sans antialiased text-light",
           fontSans.variable,
         )}
       >
         <TRPCReactProvider>
           <Navbar />
-          <main className="flex-grow flex flex-col">
+          <main className="flex-grow flex flex-col overflow-hidden">
             {children}
           </main>
           <Footer />
