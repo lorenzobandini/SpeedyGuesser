@@ -30,6 +30,18 @@ model Match {
     @@index([playerId])
 }
 
+model Word {
+  id        Int      @id @default(autoincrement())
+  word      String
+  language  String
+  difficulty Int?    @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([language])
+  @@index([difficulty])
+}
+
 // Necessary for Next auth
 model Account {
     id                       String  @id @default(cuid())
