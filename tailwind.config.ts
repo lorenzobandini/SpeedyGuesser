@@ -61,8 +61,19 @@ const config = {
         dark: "#24222d",
         second: "#cc4440",
         third: "#fad2ad",
-        light: "#f7f8f7"
-        
+        light: "#f7f8f7",
+        success: {
+          DEFAULT: '#10B981',
+          foreground: '#FFFFFF',
+        },
+        warning: {
+          DEFAULT: '#F59E0B',
+          foreground: '#FFFFFF',
+        },
+        info: {
+          DEFAULT: '#3B82F6',
+          foreground: '#FFFFFF',
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
