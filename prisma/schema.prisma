@@ -7,30 +7,6 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-// enum GameType {
-//   SINGLE_DEVICE,
-//   LOCAL_MULTIPLAYER,
-//   ONLINE_MULTIPLAYER
-// }
-
-// enum WordStatus {
-//   PENDING,
-//   CORRECT,
-//   WRONG,
-//   SKIPPED,
-// }
-
-// enum PlayerRole {
-//   GUESSER,
-//   HINT_GIVER
-// }
-
-// enum GameStatus {
-//   WAITING,
-//   IN_PROGRESS,
-//   COMPLETED
-// }
-
 model Room {
   id            String    @id @default(cuid())
   code          String    @unique
@@ -52,9 +28,8 @@ model RoomPlayer {
   room          Room      @relation(fields: [roomId], references: [id])
   roomId        String
   joinedAt      DateTime  @default(now())
-  status        String    
 
-  @@unique([roomId, role])
+  @@unique([roomId, userId, role])
 }
 
 model Game {
@@ -71,13 +46,25 @@ model GameWord {
   id            String    @id @default(cuid())
   game          Game      @relation(fields: [gameId], references: [id])
   gameId        String
-  word          String
-  status        String
+  word          Word      @relation(fields: [wordId], references: [id])
+  wordId        String
+  status        String    @default("PENDING")
   order         Int
   updatedAt     DateTime  @updatedAt
 
   @@unique([gameId, order])
 }
+
+model Word {
+  id        String   @id @default(cuid())
+  word      String
+  language  String
+  difficulty Int     @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  gameWords GameWord[]
+}
+
 // Necessary for Next auth
 model Account {
     id                       String  @id @default(cuid())

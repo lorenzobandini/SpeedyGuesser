@@ -1,4 +1,5 @@
 export enum GameType {
+  OFFLINE = "OFFLINE",
   SINGLE_DEVICE = "SINGLE_DEVICE",
   LOCAL_MULTIPLAYER = "LOCAL_MULTIPLAYER",
   ONLINE_MULTIPLAYER = "ONLINE_MULTIPLAYER",
@@ -14,10 +15,16 @@ export enum WordStatus {
 export enum PlayerRole {
   GUESSER = "GUESSER",
   HINT_GIVER = "HINT_GIVER",
+  OFFLINE_PLAYER = "OFFLINE_PLAYER",
 }
 
 export enum GameStatus {
   WAITING = "WAITING",
   IN_PROGRESS = "IN_PROGRESS",
   COMPLETED = "COMPLETED",
+}
+
+export enum Language{
+  IT = "IT",
+  EN = "EN"
 }
