@@ -17,19 +17,23 @@ export default function Game() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  let language = searchParams.get("language") ?? "IT";
+  let time = searchParams.get("time") ?? "60";
+  let passes = searchParams.get("passes") ?? "3";
 
-  const language = searchParams.get("language") ?? "IT";
-  const time = searchParams.get("time") ?? "60";
-  const passes = searchParams.get("passes") ?? "3";
+  if (!validLanguages.includes(language)) language = "IT";
 
   useEffect(() => {
-    console.log("useEffect for validation");
     if (
-      !validLanguages.includes(language) ||
       !validTimes.includes(time) ||
-      !validPasses.includes(passes)
+      !validPasses.includes(passes) ||
+      !searchParams.has("time") ||
+      !searchParams.has("passes") ||
+      !searchParams.has("language")
     ) {
-      router.replace("/game?language=IT&time=60&passes=3");
+      router.replace("/game/offline/play?language=IT&time=60&passes=3");
+      setRemainingTime(60);
+      setRemainingPasses(3);
     }
   }, [language, time, passes, router]);
 
