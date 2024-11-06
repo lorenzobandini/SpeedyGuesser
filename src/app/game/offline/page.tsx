@@ -19,7 +19,7 @@ export default function SpeedGuess() {
   const [passes, setPasses] = useState('3')
 
   const handleStartGame = () => {
-    router.push(`/game?language=${language}&time=${time}&passes=${passes}`)
+    router.push(`/game/offline/play?language=${language}&time=${time}&passes=${passes}`)
   }
 
   return (

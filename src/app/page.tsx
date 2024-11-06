@@ -9,7 +9,7 @@ export default function Home() {
           <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
             Speedy<span className="text-dark">Guesser</span>
           </h1>
-          <Link href="/select">
+          <Link href="game/">
             <Button variant={"personal"} size={"xl"}>
               <div className="text-3x">
                 Play
