@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "~/components/ui/button";
 import { FaMinus, FaPlus, FaPlay, FaPause } from "react-icons/fa";
@@ -8,9 +8,10 @@ import { RiSkipForwardFill } from "react-icons/ri";
 import { api } from "~/trpc/react";
 import { useToast } from "~/hooks/use-toast";
 import { Toaster } from "~/components/ui/toaster";
+import StatsComponent from './StatsComponent';
 
 const validLanguages = ["IT", "EN"];
-const validTimes = ["45", "60", "90"];
+const validTimes = ["4", "45", "60", "90"];
 const validPasses = ["0", "1", "3", "5"];
 
 export default function Game() {
@@ -45,12 +46,17 @@ export default function Game() {
   const [wordRevealed, setWordRevealed] = useState(false);
   const [hasChosen, setHasChosen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [wordsData, setWordsData] = useState<{ word: string; outcome: string }[]>([]);
   const someWords = api.game.getRandomWords.useQuery({ language, count: 10 });
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (remainingTime > 0 && !isPaused) {
       timer = setTimeout(() => setRemainingTime(remainingTime - 1), 1000);
+    } else if (remainingTime === 0) {
+      setShowStats(true);
+      setIsPaused(true);
     }
     return () => clearTimeout(timer);
   }, [remainingTime, isPaused]);
@@ -67,6 +73,13 @@ export default function Game() {
           description: "You've earned a point.",
           variant: "success",
         });
+        setWordsData([
+          ...wordsData,
+          {
+            word: someWords.data?.[currentWordIndex] ?? '',
+            outcome: 'indovinata',
+          },
+        ]);
       }, 500);
     }
   };
@@ -83,6 +96,13 @@ export default function Game() {
           description: "You've lost a point.",
           variant: "destructive",
         });
+        setWordsData([
+          ...wordsData,
+          {
+            word: someWords.data?.[currentWordIndex] ?? '',
+            outcome: 'sbagliata',
+          },
+        ]);
       }, 500);
     }
   };
@@ -99,6 +119,13 @@ export default function Game() {
           description: "You've used a pass.",
           variant: "info",
         });
+        setWordsData([
+          ...wordsData,
+          {
+            word: someWords.data?.[currentWordIndex] ?? '',
+            outcome: 'passata',
+          },
+        ]);
       }, 500);
     }
   };
@@ -130,6 +157,43 @@ export default function Game() {
     }
   };
 
+  const onRestart = () => {
+    setShowStats(false);
+    setRemainingTime(parseInt(time));
+    setRemainingPasses(parseInt(passes));
+    setCurrentWordIndex(0);
+    setScore(0);
+    setWordsData([]);
+    setHasChosen(false);
+    setWordRevealed(false);
+    setIsPaused(true);
+    someWords.refetch();
+  };
+
+  const onHome = () => {
+    router.push('/');
+  };
+
+  if (showStats) {
+    return (
+      <StatsComponent
+        stats={{
+          score,
+          totalPasses: parseInt(passes),
+          usedPasses: parseInt(passes) - remainingPasses,
+          averageTimePerWord:
+            wordsData.length > 0
+              ? ((parseInt(time) - remainingTime) / wordsData.length)
+              : 0,
+          mistakes: wordsData.filter((w) => w.outcome === 'sbagliata').length,
+          wordsData,
+        }}
+        onRestart={onRestart}
+        onHome={onHome}
+      />
+    );
+  }
+
   return (
     <>
       <div className="flex h-full flex-col bg-main p-4 text-dark">
@@ -138,7 +202,7 @@ export default function Game() {
           <div className="w-1/6"></div>
           <div className="flex w-4/6 justify-center">
             <div className="flex h-20 w-full max-w-2xl items-center justify-center rounded-xl border-2 border-dashed border-dark bg-third font-mono text-4xl font-bold text-dark">
-              {wordRevealed ? (someWords.data ? someWords.data[currentWordIndex] : "") : "?????"}
+              {wordRevealed ? (someWords.data?.[currentWordIndex] ?? '') : "?????"}
             </div>
           </div>
           <div className="flex w-1/6 justify-end pe-2">
