@@ -14,6 +14,7 @@ model Room {
   status        String    @default("WAITING")
   language      String
   timeLimit     Int
+  pass          Int
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   players       RoomPlayer[]
@@ -56,13 +57,13 @@ model GameWord {
 }
 
 model Word {
-  id        String   @id @default(cuid())
-  word      String
-  language  String
+  id         String   @id @default(cuid())
+  word       String
+  language   String
   difficulty Int     @default(1)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  gameWords GameWord[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  gameWords  GameWord[]
 }
 
 // Necessary for Next auth
