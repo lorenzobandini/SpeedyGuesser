@@ -11,7 +11,7 @@ import { Toaster } from "~/components/ui/toaster";
 import StatsComponent from "./StatsComponent";
 
 const validLanguages = ["IT", "EN"];
-const validTimes = ["4", "45", "60", "90"];
+const validTimes = ["45", "60", "90"];
 const validPasses = ["0", "1", "3", "5"];
 
 export default function Game() {
@@ -50,7 +50,7 @@ export default function Game() {
   const [wordsData, setWordsData] = useState<
     { word: string; outcome: string }[]
   >([]);
-  const someWords = api.game.getRandomWords.useQuery({ language, count: 10 });
+  const someWords = api.game.getRandomWords.useQuery({ language, count: 10 },{ refetchOnWindowFocus:false});
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -204,7 +204,7 @@ export default function Game() {
             Speedy<span className="text-dark">Guesser</span>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="text-2xl font-bold">Tempo:</div>
+            <div className="text-2xl font-bold hidden sm:block">Tempo:</div>
             <div className="flex h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-dark bg-second font-mono text-5xl font-bold text-dark">
               {remainingTime}
             </div>
