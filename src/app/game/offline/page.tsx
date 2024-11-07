@@ -12,7 +12,7 @@ import {
   SelectGroup,
 } from "~/components/ui/select"
 
-export default function SpeedGuess() {
+export default function OfflineMode() {
   const router = useRouter()
   const [language, setLanguage] = useState('IT')
   const [time, setTime] = useState('60')

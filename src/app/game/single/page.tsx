@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "~/server/auth";
 
-export default async function SingleGamePage() {
+export default async function SingleMode() {
     const session = await getServerAuthSession();
 
     if (!session) {

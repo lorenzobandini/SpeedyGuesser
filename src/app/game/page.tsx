@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { getServerAuthSession } from "~/server/auth";
 
-export default async function Select() {
+export default async function SelectMode() {
 
     const session = await getServerAuthSession();
 
