@@ -7,6 +7,7 @@ export interface Room {
   status: GameStatus;
   language: Language;
   timeLimit: number;
+  pass: number;
   players: RoomPlayer[];
   game?: Game;
 }
