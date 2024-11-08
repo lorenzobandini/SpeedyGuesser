@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "~/components/ui/button";
 import { FaMinus, FaPlus, FaPlay, FaPause } from "react-icons/fa";
@@ -19,8 +19,8 @@ export default function Game() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   let language = searchParams.get("language") ?? "IT";
-  let time = searchParams.get("time") ?? "60";
-  let passes = searchParams.get("passes") ?? "3";
+  const time = searchParams.get("time") ?? "60";
+  const passes = searchParams.get("passes") ?? "3";
 
   if (!validLanguages.includes(language)) language = "IT";
 
@@ -36,7 +36,7 @@ export default function Game() {
       setRemainingTime(60);
       setRemainingPasses(3);
     }
-  }, [language, time, passes, router]);
+  }, [language, time, passes, router, searchParams]);
 
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [remainingTime, setRemainingTime] = useState(parseInt(time));
@@ -169,7 +169,7 @@ export default function Game() {
     setHasChosen(false);
     setWordRevealed(false);
     setIsPaused(true);
-    someWords.refetch();
+    void someWords.refetch();
   };
 
   const onHome = () => {

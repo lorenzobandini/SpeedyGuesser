@@ -1,13 +1,12 @@
-// ...importazioni esistenti...
-import { redirect } from "next/navigation";
 import { getServerAuthSession } from "~/server/auth";
+import SingleModeClient from "./SingleModeClient";
 
 export default async function SingleMode() {
-    const session = await getServerAuthSession();
+  const session = await getServerAuthSession();
 
-    if (!session) {
-        redirect("/api/auth/signin");
-    }
-
-
+  return (    
+    <div className="flex h-full flex-col justify-between">
+      <SingleModeClient session={session} />
+    </div>
+  );
 }
