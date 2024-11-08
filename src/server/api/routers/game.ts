@@ -1,6 +1,7 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
+import { GameType, WordStatus, PlayerRole, GameStatus, Language } from '~/types/enums';
 
 export const gameRouter = createTRPCRouter({
   getRandomWords: publicProcedure
@@ -45,5 +46,29 @@ export const gameRouter = createTRPCRouter({
       }
 
       return Array.from(wordsSet);
+    }),
+  createGameSingle: protectedProcedure
+    .input(
+      z.object({
+        language: z.string(),
+        timeLimit: z.number().int().positive(),
+        pass: z.number().int().nonnegative(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { language, timeLimit, pass } = input;
+      const userId = ctx.session.user.id;
+
+      const game = await db.game.create({
+        data: {
+          userId,
+          language,
+          timeLimit,
+          pass,
+          gameType: GameType.SINGLE_DEVICE,
+        },
+      });
+
+      return { gameId: game.id };
     }),
 });

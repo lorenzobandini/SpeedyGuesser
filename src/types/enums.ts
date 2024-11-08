@@ -15,7 +15,7 @@ export enum WordStatus {
 export enum PlayerRole {
   GUESSER = "GUESSER",
   HINT_GIVER = "HINT_GIVER",
-  OFFLINE_PLAYER = "OFFLINE_PLAYER",
+  LOCAL_PLAYER = "LOCAL_PLAYER",
 }
 
 export enum GameStatus {
