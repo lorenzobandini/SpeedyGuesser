@@ -7,7 +7,7 @@ export default function ExitGameButton() {
     const router = useRouter();
 
     const handleExit = () => {
-        router.back();
+        router.push("/");
     };
 
     return (

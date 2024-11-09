@@ -8,13 +8,18 @@ import type { Session } from "next-auth";
 export default function SingleModeClient({ session }: { session: Session | null }) {
   const router = useRouter();
   const createGame = api.game.createGameSingle.useMutation();
+
+  if(!session) {
+    router.push("/api/auth/signin");
+  }
+
   const handleStartGame = async (
     language: string,
     time: string,
     passes: string,
   ) => {
     if (!session) {
-      router.push("/auth/signin");
+      router.push("/api/auth/signin");
       return;
     }
 

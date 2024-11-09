@@ -7,12 +7,12 @@ import ExitGameButton from "./(buttons)/exitGameButton"
 
 export default function Footer() {
   const pathname = usePathname()?.split('?')[0] ?? '/'
-
   const exitButtonPaths = [
     '/game/offline/play',
-    /^\/game\/local\/[^/]+\/play$/,
-    /^\/game\/single\/[^/]+\/play$/,
-    /^\/game\/online\/[^/]+\/play$/
+    /^\/game\/single\/[^/]+$/,
+    /^\/stats\/[^/]+$/,
+    /^\/game\/local\/[^/]+$/,
+    /^\/game\/online\/[^/]+$/
   ]
 
   const showExitButton = exitButtonPaths.some(pattern => 
