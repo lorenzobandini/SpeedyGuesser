@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { getServerAuthSession } from "~/server/auth";
+import RoomButton from "~/app/_components/(buttons)/RoomButton";
 
 export default async function SelectMode() {
 
@@ -32,12 +33,8 @@ export default async function SelectMode() {
                 </div>
                 {session ? (
                     <>
-                        <Link href="/game/local">
-                            <Button variant={"personal"} size={"xl"}>Local</Button>
-                        </Link>
-                        <Link href="/game/online">
-                            <Button variant={"personal"} size={"xl"}>Online</Button>
-                        </Link>
+                        <RoomButton mode="local" />
+                        <RoomButton mode="online" />
                     </>
                 ) : (
                     <>
