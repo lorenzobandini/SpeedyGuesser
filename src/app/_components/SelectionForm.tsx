@@ -13,9 +13,10 @@ import {
 
 interface SelectionFormProps {
   onStart: (language: string, time: string, passes: string) => void
+  buttonText: string
 }
 
-export default function SelectionForm({ onStart }: SelectionFormProps) {
+export default function SelectionForm({ onStart, buttonText }: SelectionFormProps) {
   const [language, setLanguage] = useState('IT')
   const [time, setTime] = useState('60')
   const [passes, setPasses] = useState('3')
@@ -83,7 +84,7 @@ export default function SelectionForm({ onStart }: SelectionFormProps) {
       </div>
       <div className="mt-6">
       <Button variant={"personal"} size={"lg"} onClick={() => onStart(language, time, passes)}>
-        Start Game
+        {buttonText}
       </Button>
       </div>
     </div>

@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
@@ -7,11 +7,7 @@ import type { Session } from "next-auth";
 
 export default function SingleModeClient({ session }: { session: Session | null }) {
   const router = useRouter();
-  const createGame = api.game.createGameSingle.useMutation();
-
-  if(!session) {
-    router.push("/api/auth/signin");
-  }
+  const createRoom = api.game.createRoom.useMutation();
 
   const handleStartGame = async (
     language: string,
@@ -23,21 +19,24 @@ export default function SingleModeClient({ session }: { session: Session | null 
       return;
     }
 
+    const timeLimit = parseInt(time);
+    const pass = parseInt(passes);
+
     try {
-      const response = await createGame.mutateAsync({
+      const { roomId } = await createRoom.mutateAsync({
         language,
-        timeLimit: parseInt(time),
-        pass: parseInt(passes),
+        timeLimit,
+        pass,
       });
-      router.push(`/game/single/${response.gameId}`);
+      router.push(`/game/local/room/${roomId}`);
     } catch (error) {
-      console.error(error);
+      console.error("Errore nella creazione della stanza:", error);
     }
   };
 
   return (
     <div className="flex h-full flex-col justify-between">
-      <SelectionForm onStart={handleStartGame} buttonText="Start Game"/>
+      <SelectionForm onStart={handleStartGame} buttonText="Crea Stanza"/>
     </div>
   );
 }

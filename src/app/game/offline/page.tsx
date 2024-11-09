@@ -14,7 +14,7 @@ export default function OfflineMode() {
 
   return (
     <div className="flex h-full flex-col justify-between">
-      <SelectionForm onStart={handleStartGame} />
+      <SelectionForm onStart={handleStartGame} buttonText="Start Game" />
     </div>
   );
 }
