@@ -1,11 +1,9 @@
-import type { GameType, WordStatus, PlayerRole, GameStatus, Language } from './enums';
-
 export interface Room {
   id: string;
   code: string;
-  gameType: GameType;
-  status: GameStatus;
-  language: Language;
+  gameType: string;
+  status: string;
+  language: string;
   timeLimit: number;
   pass: number;
   players: RoomPlayer[];
@@ -14,7 +12,7 @@ export interface Room {
 
 export interface RoomPlayer {
   id: string;
-  role: PlayerRole;
+  role: string;
   userId: string;
   roomId: string;
   joinedAt?: Date;
@@ -23,24 +21,44 @@ export interface RoomPlayer {
 
 export interface Game {
   id: string;
-  roomId: string;
+  roomId: string | null;
+  userId: string | null;
   score: number;
-  startedAt?: Date;
-  endedAt?: Date;
-  words: GameWord[];
-}
+  language: string;
+  timeLimit: number;
+  pass: number;
+  passUsed: number;
+  mistakes: number;
+  status: string;
+  startedAt: Date;
+  endedAt: Date | null;
+  gameType: string;
+};
 
 export interface GameWord {
   id: string;
   gameId: string;
   word: Word;
-  status: WordStatus;
+  status: string;
   order: number;
 }
 
 export interface Word {
   id: string;
   word: string;
-  language: Language;
+  language: string;
   difficulty?: number;
+}
+
+export interface StatsComponentProps {
+  stats: {
+    score: number;
+    totalTime: number;
+    totalPasses: number;
+    usedPasses: number;
+    mistakes: number;
+    wordsData: { word: string; outcome: string }[];
+  };
+  onRestart: () => void;
+  onHome: () => void;
 }
