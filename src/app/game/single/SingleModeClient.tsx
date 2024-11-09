@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -9,7 +8,6 @@ import type { Session } from "next-auth";
 export default function SingleModeClient({ session }: { session: Session | null }) {
   const router = useRouter();
   const createGame = api.game.createGameSingle.useMutation();
-
   const handleStartGame = async (
     language: string,
     time: string,
@@ -26,7 +24,7 @@ export default function SingleModeClient({ session }: { session: Session | null 
         timeLimit: parseInt(time),
         pass: parseInt(passes),
       });
-      router.push(`/game/single/play/${response.gameId}`);
+      router.push(`/game/single/${response.gameId}`);
     } catch (error) {
       console.error(error);
     }

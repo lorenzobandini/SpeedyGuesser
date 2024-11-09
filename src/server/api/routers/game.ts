@@ -1,7 +1,10 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  publicProcedure,
+  protectedProcedure,
+} from "~/server/api/trpc";
 import { db } from "~/server/db";
-import { GameType, WordStatus, PlayerRole, GameStatus, Language } from '~/types/enums';
 
 export const gameRouter = createTRPCRouter({
   getRandomWords: publicProcedure
@@ -53,7 +56,7 @@ export const gameRouter = createTRPCRouter({
         language: z.string(),
         timeLimit: z.number().int().positive(),
         pass: z.number().int().nonnegative(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { language, timeLimit, pass } = input;
@@ -65,10 +68,118 @@ export const gameRouter = createTRPCRouter({
           language,
           timeLimit,
           pass,
-          gameType: GameType.SINGLE_DEVICE,
+          gameType: "SINGLE_DEVICE",
         },
       });
 
       return { gameId: game.id };
+    }),
+  getGameById: protectedProcedure
+    .input(
+      z.object({
+        gameId: z.string(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { gameId } = input;
+      const userId = ctx.session.user.id;
+
+      const game = await db.game.findUnique({
+        where: { id: gameId },
+      });
+
+      if (!game || game.userId !== userId) {
+        throw new Error("Gioco non trovato o accesso negato");
+      }
+
+      return game;
+    }),
+  updateGameResults: protectedProcedure
+    .input(
+      z.object({
+        gameId: z.string(),
+        score: z.number().int(),
+        passUsed: z.number().int(),
+        mistakes: z.number().int(),
+        wordsData: z.array(
+          z.object({
+            word: z.string(),
+            outcome: z.string(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { gameId, score, passUsed, mistakes, wordsData } = input;
+      const userId = ctx.session.user.id;
+
+      const game = await db.game.findUnique({
+        where: { id: gameId },
+      });
+
+      if (!game || game.userId !== userId) {
+        throw new Error("Gioco non trovato o accesso negato");
+      }
+
+      await db.game.update({
+        where: { id: gameId },
+        data: {
+          score,
+          passUsed,
+          mistakes,
+          endedAt: new Date(),
+          status: "COMPLETED",
+        },
+      });
+
+      for (let i = 0; i < wordsData.length; i++) {
+        const wordData = wordsData[i];
+        if (!wordData) continue;
+        const word = await db.word.findFirst({
+          where: { word: wordData.word, language: game.language },
+        });
+
+        if (word) {
+          await db.gameWord.create({
+            data: {
+              gameId: game.id,
+              wordId: word.id,
+              status: wordData.outcome,
+              order: i,
+            },
+          });
+        }
+      }
+
+      return { success: true };
+    }),
+  getGameWords: protectedProcedure
+    .input(
+      z.object({
+        gameId: z.string(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { gameId } = input;
+      const userId = ctx.session.user.id;
+
+      const game = await db.game.findUnique({
+        where: { id: gameId },
+      });
+
+      if (!game || game.userId !== userId) {
+        throw new Error("Gioco non trovato o accesso negato");
+      }
+
+      const gameWords = await db.gameWord.findMany({
+        where: { gameId },
+        include: { word: true },
+        orderBy: { order: "asc" },
+      });
+
+      return gameWords.map((gw) => ({
+        word: gw.word.word,
+        outcome: gw.status,
+      }));
     }),
 });
