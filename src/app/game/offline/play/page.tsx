@@ -8,7 +8,7 @@ import { RiSkipForwardFill } from "react-icons/ri";
 import { api } from "~/trpc/react";
 import { useToast } from "~/hooks/use-toast";
 import { Toaster } from "~/components/ui/toaster";
-import StatsComponent from "./StatsComponent";
+import StatsComponent from "../../../_components/StatsComponent";
 
 const validLanguages = ["IT", "EN"];
 const validTimes = ["45", "60", "90"];
@@ -50,7 +50,10 @@ export default function Game() {
   const [wordsData, setWordsData] = useState<
     { word: string; outcome: string }[]
   >([]);
-  const someWords = api.game.getRandomWords.useQuery({ language, count: 10 },{ refetchOnWindowFocus:false});
+  const someWords = api.game.getRandomWords.useQuery(
+    { language, count: 50 },
+    { refetchOnWindowFocus: false },
+  );
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -183,10 +186,7 @@ export default function Game() {
           score,
           totalPasses: parseInt(passes),
           usedPasses: parseInt(passes) - remainingPasses,
-          averageTimePerWord:
-            wordsData.length > 0
-              ? (parseInt(time) - remainingTime) / wordsData.length
-              : 0,
+          totalTime: parseInt(time),
           mistakes: wordsData.filter((w) => w.outcome === "sbagliata").length,
           wordsData,
         }}
@@ -204,7 +204,7 @@ export default function Game() {
             Speedy<span className="text-dark">Guesser</span>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="text-2xl font-bold hidden sm:block">Tempo:</div>
+            <div className="hidden text-2xl font-bold sm:block">Tempo:</div>
             <div className="flex h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-dark bg-second font-mono text-5xl font-bold text-dark">
               {remainingTime}
             </div>
@@ -220,25 +220,25 @@ export default function Game() {
         </div>
 
         <div className="mb-8 flex items-center justify-between">
-          <div className="flex flex-col items-center w-1/4">
+          <div className="flex w-1/4 flex-col items-center">
             <div className="text-2xl font-bold">Punteggio</div>
             <div className="mt-2 flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-dark bg-second font-mono text-3xl font-bold text-dark">
               {score.toString().padStart(2, "0")}
             </div>
           </div>
 
-          <div className="flex justify-center w-2/4">
-          <Button
-            variant="personal"
-            size="lg"
-            onClick={togglePause}
+          <div className="flex w-2/4 justify-center">
+            <Button
+              variant="personal"
+              size="lg"
+              onClick={togglePause}
               className="flex h-32 w-32 items-center justify-center rounded-full bg-dark text-6xl text-white transition-colors hover:bg-dark/80"
-          >
-            {isPaused ? <FaPlay /> : <FaPause />}
-          </Button>
+            >
+              {isPaused ? <FaPlay /> : <FaPause />}
+            </Button>
           </div>
 
-          <div className="flex flex-col items-center w-1/4">
+          <div className="flex w-1/4 flex-col items-center">
             <div className="text-2xl font-bold text-dark">Passi</div>
             <div className="mt-2 flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-dark bg-second font-mono text-3xl font-bold">
               {remainingPasses}
