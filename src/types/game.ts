@@ -1,6 +1,6 @@
 export interface Room {
   id: string;
-  code: string;
+  code: number;
   gameType: string;
   status: string;
   language: string;

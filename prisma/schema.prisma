@@ -9,7 +9,7 @@ datasource db {
 
 model Room {
   id            String    @id @default(cuid())
-  code          String    @unique
+  code          Int    @unique
   gameType      String    
   status        String    @default("WAITING")
   language      String
