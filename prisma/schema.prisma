@@ -9,7 +9,7 @@ datasource db {
 
 model Room {
   id            String    @id @default(cuid())
-  code          Int    @unique
+  code          Int       @unique
   gameType      String    
   status        String    @default("WAITING")
   language      String
@@ -30,7 +30,7 @@ model RoomPlayer {
   roomId        String
   joinedAt      DateTime  @default(now())
 
-  @@unique([roomId, userId, role])
+  @@unique([roomId, userId], name: "roomId_userId_unique")
 }
 
 model Game {
@@ -58,7 +58,7 @@ model GameWord {
   gameId        String
   word          Word      @relation(fields: [wordId], references: [id])
   wordId        String
-  status        String    @default("PENDING") // Esempi: "indovinata", "sbagliata", "passata"
+  status        String    @default("PENDING")
   order         Int
   updatedAt     DateTime  @updatedAt
 
