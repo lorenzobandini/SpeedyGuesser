@@ -58,7 +58,7 @@ model GameWord {
   gameId        String
   word          Word      @relation(fields: [wordId], references: [id])
   wordId        String
-  status        String    @default("PENDING")
+  status        String    @default("PENDING") // Esempi: "indovinata", "sbagliata", "passata"
   order         Int
   updatedAt     DateTime  @updatedAt
 
@@ -73,6 +73,8 @@ model Word {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   gameWords  GameWord[]
+
+  @@unique([word, language])
 }
 
 // Necessary for Next auth
