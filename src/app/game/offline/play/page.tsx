@@ -18,9 +18,9 @@ export default function Game() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  let language = searchParams.get("language") ?? "IT";
-  const time = searchParams.get("time") ?? "60";
-  const passes = searchParams.get("passes") ?? "3";
+  let language = searchParams?.get("language") ?? "IT";
+  const time = searchParams?.get("time") ?? "60";
+  const passes = searchParams?.get("passes") ?? "3";
 
   if (!validLanguages.includes(language)) language = "IT";
 
@@ -28,9 +28,9 @@ export default function Game() {
     if (
       !validTimes.includes(time) ||
       !validPasses.includes(passes) ||
-      !searchParams.has("time") ||
-      !searchParams.has("passes") ||
-      !searchParams.has("language")
+      !searchParams?.has("time") ||
+      !searchParams?.has("passes") ||
+      !searchParams?.has("language")
     ) {
       router.replace("/game/offline/play?language=IT&time=60&passes=3");
       setRemainingTime(60);

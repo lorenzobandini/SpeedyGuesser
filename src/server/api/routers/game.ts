@@ -1,9 +1,5 @@
 import { z } from "zod";
-import {
-  createTRPCRouter,
-  publicProcedure,
-  protectedProcedure,
-} from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
 
 export const gameRouter = createTRPCRouter({
@@ -50,6 +46,7 @@ export const gameRouter = createTRPCRouter({
 
       return Array.from(wordsSet);
     }),
+
   createGameSingle: protectedProcedure
     .input(
       z.object({
@@ -74,6 +71,7 @@ export const gameRouter = createTRPCRouter({
 
       return { gameId: game.id };
     }),
+
   getGameById: protectedProcedure
     .input(
       z.object({
@@ -94,6 +92,7 @@ export const gameRouter = createTRPCRouter({
 
       return game;
     }),
+
   updateGameResults: protectedProcedure
     .input(
       z.object({
@@ -153,6 +152,7 @@ export const gameRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
   getGameWords: protectedProcedure
     .input(
       z.object({
@@ -181,160 +181,5 @@ export const gameRouter = createTRPCRouter({
         word: gw.word.word,
         outcome: gw.status,
       }));
-    }),
-  createRoom: protectedProcedure
-    .input(
-      z.object({
-        language: z.string(),
-        timeLimit: z.number().int().positive(),
-        pass: z.number().int().nonnegative(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      const { language, timeLimit, pass } = input;
-
-      let code: number;
-      let attempts = 0;
-      const maxAttempts = 10;
-      let existingRoom = null;
-
-      do {
-        code = Math.floor(1000 + Math.random() * 9000);
-        existingRoom = await db.room.findUnique({
-          where: { code },
-        });
-        attempts++;
-      } while (existingRoom && attempts < maxAttempts);
-
-      if (attempts >= maxAttempts) {
-        throw new Error("Impossibile generare un codice stanza unico");
-      }
-
-      const room = await db.room.create({
-        data: {
-          code,
-          gameType: "LOCAL_MULTIPLAYER",
-          language,
-          timeLimit,
-          pass,
-        },
-      });
-
-      return { roomId: room.id };
-    }),
-  getRoomById: protectedProcedure
-    .input(z.object({ roomId: z.string() }))
-    .query(async ({ input }) => {
-      const { roomId } = input;
-      const room = await db.room.findUnique({
-        where: { id: roomId },
-        include: {
-          players: {
-            include: {
-              user: true,
-            },
-          },
-        },
-      });
-
-      return room;
-    }),
-  joinRoom: protectedProcedure
-    .input(
-      z.object({
-        roomId: z.string(),
-        role: z.enum(["HINTER", "GUESSER"]),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { roomId, role } = input;
-      const userId = ctx.session.user.id;
-
-      const existingPlayer = await db.roomPlayer.findFirst({
-        where: {
-          roomId,
-          userId,
-        },
-      });
-
-      if (existingPlayer) {
-        await db.roomPlayer.update({
-          where: { id: existingPlayer.id },
-          data: { role },
-        });
-      } else {
-        await db.roomPlayer.create({
-          data: {
-            roomId,
-            userId,
-            role,
-          },
-        });
-      }
-
-      return { success: true };
-    }),
-  leaveRoom: protectedProcedure
-    .input(z.object({ roomId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
-      const { roomId } = input;
-      const userId = ctx.session.user.id;
-
-      await db.roomPlayer.deleteMany({
-        where: {
-          roomId,
-          userId,
-        },
-      });
-
-      return { success: true };
-    }),
-  updatePlayerRole: protectedProcedure
-    .input(
-      z.object({
-        roomId: z.string(),
-        role: z.enum(["HINTER", "GUESSER"]),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { roomId, role } = input;
-      const userId = ctx.session.user.id;
-
-      const player = await db.roomPlayer.findFirst({
-        where: {
-          roomId,
-          userId,
-        },
-      });
-      
-      if(player) {
-        await db.roomPlayer.update({
-          where: { id: player.id },
-          data: { role },
-        });
-        return { success: true };
-      }else{
-        return { success: false };
-      }
-    }),
-  getRoomIdByCode: protectedProcedure
-    .input(
-      z.object({
-        code: z.number().int(),
-      })
-    )
-    .query(async ({ input }) => {
-      const { code } = input;
-
-      const room = await db.room.findUnique({
-        where: { code },
-        select: { id: true },
-      });
-
-      if (!room) {
-        throw new Error("Stanza non trovata");
-      }
-
-      return { roomId: room.id };
     }),
 });

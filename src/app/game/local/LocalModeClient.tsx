@@ -7,7 +7,7 @@ import type { Session } from "next-auth";
 
 export default function SingleModeClient({ session }: { session: Session | null }) {
   const router = useRouter();
-  const createRoom = api.game.createRoom.useMutation();
+  const createRoom = api.room.createRoom.useMutation();
 
   const handleStartGame = async (
     language: string,
