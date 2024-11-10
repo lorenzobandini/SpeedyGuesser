@@ -30,7 +30,7 @@ model RoomPlayer {
   roomId        String
   joinedAt      DateTime  @default(now())
 
-  @@unique([roomId, userId], name: "roomId_userId_unique")
+  @@unique([userId, roomId])
 }
 
 model Game {

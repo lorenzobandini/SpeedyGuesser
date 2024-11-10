@@ -22,7 +22,7 @@ export default function RoomButton({ mode }: RoomButtonProps) {
   const [join, setJoin] = useState(false);
   const [roomNumber, setRoomNumber] = useState("");
   const router = useRouter();
-  const getRoomIdByCode = api.game.getRoomIdByCode.useQuery(
+  const getRoomIdByCode = api.room.getRoomIdByCode.useQuery(
     { code: parseInt(roomNumber) },
     { enabled: false }
   );
