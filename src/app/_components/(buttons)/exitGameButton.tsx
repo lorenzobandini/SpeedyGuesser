@@ -1,7 +1,8 @@
 import { Button } from "~/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "~/components/ui/dialog";
+import { Dialog, DialogTitle, DialogContent, DialogTrigger } from "~/components/ui/dialog";
 import { IoMdExit } from "react-icons/io";
 import { useRouter } from "next/navigation";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
 export default function ExitGameButton() {
     const router = useRouter();
@@ -12,6 +13,9 @@ export default function ExitGameButton() {
 
     return (
         <Dialog>
+          <VisuallyHidden.Root>
+            <DialogTitle>Domanda di Uscire</DialogTitle>
+          </VisuallyHidden.Root>
             <DialogTrigger asChild>
                 <Button variant={"personalIcon"} size={"icon"} className="text-light bg-second hover:bg-secondary/70 hover:text-dark">
                     <IoMdExit size={28} />
