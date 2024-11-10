@@ -317,4 +317,24 @@ export const gameRouter = createTRPCRouter({
         return { success: false };
       }
     }),
+  getRoomIdByCode: protectedProcedure
+    .input(
+      z.object({
+        code: z.number().int(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { code } = input;
+
+      const room = await db.room.findUnique({
+        where: { code },
+        select: { id: true },
+      });
+
+      if (!room) {
+        throw new Error("Stanza non trovata");
+      }
+
+      return { roomId: room.id };
+    }),
 });

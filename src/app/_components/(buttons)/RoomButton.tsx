@@ -1,7 +1,8 @@
 "use client";
+
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
-import { Dialog, DialogContent } from "~/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from "~/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import {
   InputOTP,
@@ -9,6 +10,8 @@ import {
   InputOTPSlot,
 } from "~/components/ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
+import { api } from "~/trpc/react";
 
 interface RoomButtonProps {
   mode: "local" | "online";
@@ -19,16 +22,32 @@ export default function RoomButton({ mode }: RoomButtonProps) {
   const [join, setJoin] = useState(false);
   const [roomNumber, setRoomNumber] = useState("");
   const router = useRouter();
+  const getRoomIdByCode = api.game.getRoomIdByCode.useQuery(
+    { code: parseInt(roomNumber) },
+    { enabled: false }
+  );
 
   const handleCreateRoom = () => {
     router.push(`/game/${mode}`);
     setOpen(false);
   };
 
-  const handleJoinRoom = () => {
-    router.push(`/game/${mode}/join?room=${roomNumber}`);
-    setOpen(false);
-  };
+  const handleJoinRoom = async () => {
+    if (roomNumber.length < 4) {
+      return;
+    }
+
+    try {
+      const response = await getRoomIdByCode.refetch();
+      const roomId = response.data?.roomId;
+      if (roomId) {
+        router.push(`/game/${mode}/room/${roomId}`);
+        setOpen(false);
+      }
+    }catch (error) {
+      console.error(error);
+    }
+  }
 
   return (
     <>
@@ -46,6 +65,9 @@ export default function RoomButton({ mode }: RoomButtonProps) {
         }}
       >
         <DialogContent>
+          <VisuallyHidden.Root>
+            <DialogTitle>Gestisci la stanza</DialogTitle>
+          </VisuallyHidden.Root>
           {!join ? (
             <div className="flex flex-col items-center">
               <h2 className="mb-4 text-xl font-bold">Scegli un&apos;opzione</h2>
@@ -87,6 +109,12 @@ export default function RoomButton({ mode }: RoomButtonProps) {
               </Button>
             </div>
           )}
+          <VisuallyHidden.Root>
+            <DialogDescription>
+              Scegli se creare una stanza o unirti a una esistente
+            </DialogDescription>
+            <DialogHeader>Seleziona un&apos;opzione</DialogHeader>
+          </VisuallyHidden.Root>
         </DialogContent>
       </Dialog>
     </>
