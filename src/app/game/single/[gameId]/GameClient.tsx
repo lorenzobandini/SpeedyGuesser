@@ -8,7 +8,7 @@ import { RiSkipForwardFill } from "react-icons/ri";
 import { api } from "~/trpc/react";
 import { useToast } from "~/hooks/use-toast";
 import { Toaster } from "~/components/ui/toaster";
-import type { Game } from "~/types/game";
+import type { Game } from "@prisma/client";
 
 export default function GameClient({ game }: { game : Game }) {
   const router = useRouter();

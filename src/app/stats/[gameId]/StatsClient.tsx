@@ -1,6 +1,6 @@
 'use client'
 
-import type { Game } from "~/types/game";
+import type { Game } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import StatsComponent from "~/app/_components/StatsComponent";
