@@ -1,24 +1,21 @@
 /* eslint-disable */
 /// <reference lib="webworker" />
 
-// Cast esplicito a 'unknown' prima di convertire in 'ServiceWorkerGlobalScope'
 const swSelf = /** @type {ServiceWorkerGlobalScope} */ (/** @type {unknown} */ (self));
 
-// Gestione evento "push"
 swSelf.addEventListener('push', function (event) {
   const pushEvent = /** @type {PushEvent} */ (event);
   const data = pushEvent.data ? pushEvent.data.json() : {};
   const options = {
     body: data.body,
-    icon: data.icon || '/icon.png',
-    badge: '/badge.png',
+    icon: data.icon || '/SpeedyGuesserLogo-LittleRounded.png',
+    badge: '/SpeedyGuesserLogo-BigRounded.png',
   };
   pushEvent.waitUntil(
     swSelf.registration.showNotification(data.title, options)
   );
 });
 
-// Gestione evento "notificationclick"
 swSelf.addEventListener('notificationclick', function (event) {
   const notificationEvent = /** @type {NotificationEvent} */ (event);
   notificationEvent.notification.close();

@@ -12,11 +12,9 @@ if (webpush && typeof webpush.setVapidDetails === 'function') {
   throw new Error('Failed to initialize webpush');
 }
 
-// Dichiara il tipo per la sottoscrizione (PushSubscription).
 let subscription: webpush.PushSubscription | null = null;
 
 export async function subscribeUser(sub: webpush.PushSubscription) {
-  // Accedi direttamente alle chiavi dalla proprietà sub.keys
   const p256dh = sub.keys.p256dh;
   const auth = sub.keys.auth;
 
@@ -42,13 +40,16 @@ export async function unsubscribeUser() {
 
 export async function sendNotification(message: string) {
   if (!subscription) {
-    throw new Error('No subscription available');
+    return { success: false, error: 'No subscription available' };
   }
   try {
-    await webpush.sendNotification(subscription, JSON.stringify({ title: 'SpeedyGuesser', body: message }));
+    await webpush.sendNotification(subscription, JSON.stringify({
+      title: 'SpeedyGuesser',
+      body: message,
+      icon: '/SpeedyGuesserLogo-LittleRounded.png',
+    }));
     return { success: true };
   } catch (error) {
-    console.error('Error sending push notification:', error);
     return { success: false, error: 'Failed to send notification' };
   }
 }

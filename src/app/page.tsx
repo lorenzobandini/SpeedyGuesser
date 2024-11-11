@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { subscribeUser, sendNotification } from '~/app/actions';
 
 
-// Utility per trasformare il VAPID key
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -18,7 +17,6 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
-// Componente per gestire le notifiche push
 function PushNotificationManager() {
   const [isSupported, setIsSupported] = useState(false);
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
@@ -62,21 +60,20 @@ function PushNotificationManager() {
     };
     await subscribeUser(transformedSub);
     setSubscription(sub);
-    // Qui puoi inviare la sottoscrizione al server tramite API
-    console.log('Sottoscritto:', sub);
   }
 
   async function unsubscribeFromPush() {
     await subscription?.unsubscribe();
     setSubscription(null);
-    // Qui puoi avvisare il server che l'utente si è disiscritto
-    console.log('Disiscritto');
   }
 
   async function sendTestNotification() {
     if (subscription) {
-      await sendNotification(message);
-      console.log('Notifica inviata con messaggio:', message);
+      const result = await sendNotification(message);
+      if (!result.success) {
+        await subscribeToPush();
+        await sendNotification(message);
+      }
       setMessage('');
     }
   }
@@ -111,7 +108,6 @@ function PushNotificationManager() {
   );
 }
 
-// Componente per mostrare il prompt di installazione
 function InstallPrompt() {
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
