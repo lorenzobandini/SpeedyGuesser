@@ -10,53 +10,17 @@ import { RiSkipForwardFill } from "react-icons/ri";
 import { Toaster } from "~/components/ui/toaster";
 import { useToast } from "~/hooks/use-toast";
 import type { GameState } from "@prisma/client";
+import { redirect } from "next/navigation";
 
-interface getGameState {
-  id: string;
-  gameId: string;
-  actualTime: number;
-  actualScore: number;
-  actualPass: number;
-  actualIndexWord: number;
-  actualStatus: string;
-  isTimerRunning: boolean;
-}
-
-interface Game {
-  id: string;
-  roomId: string;
-  userId: string | null;
-  score: number;
-  language: string;
-  timeLimit: number;
-  pass: number;
-  passUsed: number;
-  mistakes: number;
-  status: string;
-  startedAt: Date;
-  endedAt: Date | null;
-  gameType: string;
-}
-
-/*
-Inizialmente
-        data: {
-          gameId,
-          actualTime: game.timeLimit,
-          actualScore: 0,
-          actualPass: game.pass,
-          actualIndexWord: 0,
-          actualStatus: 'IN_PROGRESS',
-          isTimerRunning: false,
-        },
-
-In game invece troviamo gli altri dati
-
-
-*/
 
 export default function GameClient({ session }: { session: Session | null }) {
+
+  if (!session) {
+    redirect("/auth/signin");
+  }
+  
   const router = useRouter();
+  const { toast } = useToast();
 
   const params = useParams<Record<string, string | string[]>>();
   const gameIdParam = params?.gameId;
@@ -65,8 +29,6 @@ export default function GameClient({ session }: { session: Session | null }) {
     : (gameIdParam ?? "");
 
   const [gameState, setGameState] = useState<GameState>();
-  const [wordRevealed, setWordRevealed] = useState(false);
-  const [hasChosen, setHasChosen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
 
@@ -77,6 +39,8 @@ export default function GameClient({ session }: { session: Session | null }) {
   );
   const getWords = api.game.getGameWords.useQuery({ gameId: gameId ?? "" },{ enabled: false});
   const updateGameState = api.game.updateGameState.useMutation();
+  const updateGameResults = api.game.updateGameResults.useMutation();
+  const getGame = api.game.getGameById.useQuery({ gameId: gameId ?? "" });
 
   useEffect(() => {
     const initializeGameState = async () => {
@@ -127,7 +91,140 @@ export default function GameClient({ session }: { session: Session | null }) {
     }
   }, [gameState]);
 
+  
+  useEffect(() => {
+    if (gameState?.actualTime === 0 && gameState?.isTimerRunning) {
+      void handleStateChange({
+        ...gameState,
+        isTimerRunning: false,
+      });
+      updateGameResults.mutate(
+        {
+          gameId: gameState.gameId,
+          score: gameState.actualScore,
+          passUsed: getGame.data?.pass != undefined ? getGame.data.pass - gameState.actualPass : 0,
+          mistakes: gameState.actualIndexWord + 1 - gameState.actualScore,
+          wordsData: getWords.data ?? [],
+        },
+      
+        {
+          onSuccess: () => {
+            router.push(`/stats/${gameState.gameId}`);
+          },
+          onError: () => {
+            toast({
+              title: "Errore",
+              description: "Errore nel salvataggio dei risultati.",
+              variant: "destructive",
+            });
+          },
+        }
+      );
+    }
+  }, [gameState, router, updateGameState]);
 
+  const handleCorrect = () => {
+    if (!gameState?.isTimerRunning || gameState?.wordRevealed || gameState?.hasChosen) return;
+    setIsProcessing(true);
+    setTimeout(() => {
+      void handleStateChange({
+        ...gameState,
+        actualScore: gameState.actualScore + 1,
+        hasChosen: true,
+        });
+      toast({
+        title: "Correct!",
+        description: "You've earned a point.",
+        variant: "success",
+      });
+      nextWord();
+      setIsProcessing(false);
+    }, 500);
+  };
+
+  const handleIncorrect = () => {
+    if (!gameState?.isTimerRunning || !gameState?.wordRevealed || gameState?.hasChosen) return;
+    setIsProcessing(true);
+    setTimeout(() => {
+      void handleStateChange({
+        ...gameState,
+        actualScore: Math.max(0, gameState.actualScore - 1),
+        hasChosen: true,
+      });
+      toast({
+        title: "Incorrect",
+        description: "You've lost a point.",
+        variant: "destructive",
+      });
+      nextWord();
+      setIsProcessing(false);
+    }, 500);
+  };
+
+  const handlePass = () => {
+    if (
+      !gameState?.isTimerRunning ||
+      !gameState?.wordRevealed ||
+      gameState.actualPass <= 0 ||
+      gameState?.hasChosen
+    )
+      return;
+    setIsProcessing(true);
+    setTimeout(() => {
+      void handleStateChange({
+        ...gameState,
+        actualPass: gameState.actualPass - 1,
+        hasChosen: true,
+      });
+      toast({
+        title: "Passed",
+        description: "You've used a pass.",
+        variant: "info",
+      });
+      nextWord();
+      setIsProcessing(false);
+    }, 500);
+  };
+
+  const nextWord = () => {
+    if (getWords.data && gameState) {
+      const nextIndex =
+        gameState.actualIndexWord < getWords.data.length - 1
+          ? gameState.actualIndexWord + 1
+          : 0;
+      void handleStateChange({
+        ...gameState,
+        actualIndexWord: nextIndex,
+        hasChosen: true,
+      });
+    }
+  };
+
+  const togglePause = () => {
+    if (gameState) {
+      if (gameState.isTimerRunning) {
+        if (gameState.wordRevealed && !gameState.hasChosen) {
+          toast({
+            title: "Action Required",
+            description: "You must choose an option before continuing!",
+            variant: "warning",
+          });
+          return;
+        }
+        void handleStateChange({
+          ...gameState,
+          wordRevealed: true,
+          isTimerRunning: false,
+        });
+        nextWord();
+      } else {
+        void handleStateChange({
+          ...gameState,
+          isTimerRunning: true,
+        });
+      }
+    }
+  };
   
   return (
     <div className="min-h-screen bg-main p-4 text-dark">
@@ -146,7 +243,7 @@ export default function GameClient({ session }: { session: Session | null }) {
 
         <div className="mb-8 flex items-center justify-center">
           <div className="flex h-20 w-full max-w-2xl items-center justify-center rounded-xl border-2 border-dashed border-dark bg-third font-mono text-4xl font-bold text-dark">
-              {wordRevealed && gameState
+              {gameState?.wordRevealed && gameState
               ? getWords.data?.[gameState.actualIndexWord]?.word ?? ""
               : "?????"}
           </div>
@@ -184,7 +281,7 @@ export default function GameClient({ session }: { session: Session | null }) {
             variant="personal"
             size="lg"
             onClick={handleIncorrect}
-            disabled={gameState?.isTimerRunning ?? !wordRevealed ?? hasChosen ?? isProcessing}
+            disabled={gameState?.isTimerRunning ?? !gameState?.wordRevealed ?? gameState?.hasChosen ?? isProcessing}
             className="flex h-24 w-24 items-center justify-center rounded-full bg-dark text-4xl text-white transition-all hover:bg-dark/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <FaMinus />
@@ -194,11 +291,11 @@ export default function GameClient({ session }: { session: Session | null }) {
             size="lg"
             onClick={handlePass}
             disabled={
-              gameState?.actualPass === 0 ||
-              gameState?.isTimerRunning ||
-              !wordRevealed ||
-              hasChosen ||
-              isProcessing
+              (gameState?.actualPass === 0) ||
+              (gameState?.isTimerRunning ?? 
+              !gameState?.wordRevealed ??
+              gameState?.hasChosen ??
+              isProcessing)
             }
             className="flex h-24 w-24 items-center justify-center rounded-full bg-dark text-4xl text-white transition-all hover:bg-dark/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -208,7 +305,7 @@ export default function GameClient({ session }: { session: Session | null }) {
             variant="personal"
             size="lg"
             onClick={handleCorrect}
-            disabled={gameState?.isTimerRunning ?? !wordRevealed ?? hasChosen ?? isProcessing}
+            disabled={gameState?.isTimerRunning ?? !gameState?.wordRevealed ?? gameState?.hasChosen ?? isProcessing}
             className="flex h-24 w-24 items-center justify-center rounded-full bg-dark text-4xl text-white transition-all hover:bg-dark/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <FaPlus />

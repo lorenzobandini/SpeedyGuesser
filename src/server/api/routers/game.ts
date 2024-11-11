@@ -172,7 +172,7 @@ export const gameRouter = createTRPCRouter({
       }
 
       const gameWords = await db.gameWord.findMany({
-        where: { gameId },
+        where: { id: gameId },
         include: { word: true },
         orderBy: { order: "asc" },
       });
@@ -226,7 +226,7 @@ export const gameRouter = createTRPCRouter({
       const { gameId } = input;
 
       const existingState = await db.gameState.findUnique({
-        where: { gameId },
+        where: { id: gameId },
       });
 
       if (existingState) {
@@ -261,6 +261,8 @@ export const gameRouter = createTRPCRouter({
           actualIndexWord: 0,
           actualStatus: 'IN_PROGRESS',
           isTimerRunning: false,
+          wordRevealed: false,
+          hasChosen: false,
         },
       });
       const words = await db.word.findMany({
@@ -296,7 +298,7 @@ export const gameRouter = createTRPCRouter({
       const { gameId } = input;
 
       const gameState = await db.gameState.findUnique({
-        where: { gameId },
+        where: { id: gameId },
       });
 
       if (!gameState) {
@@ -322,7 +324,7 @@ export const gameRouter = createTRPCRouter({
       const { gameId, ...data } = input;
 
       const gameState = await db.gameState.update({
-        where: { gameId },
+        where: { id: gameId },
         data,
       });
 
