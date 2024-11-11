@@ -45,6 +45,7 @@ export const roomRouter = createTRPCRouter({
           language,
           timeLimit,
           pass,
+          status: "WAITING",
         },
       });
 
@@ -113,7 +114,10 @@ export const roomRouter = createTRPCRouter({
           },
         });
       }
-
+      await db.room.update({
+        where: { id: roomId },
+        data: { status: "READY" },
+      });
       roomEvents.emit(`roomUpdate:${input.roomId}`);
       roomPlayerEvents.emit(`roomPlayerUpdate:${input.roomId}`);
       return { success: true };
@@ -223,6 +227,20 @@ export const roomRouter = createTRPCRouter({
           status: "ONGOING",
         },
       });
+
+      return { gameId: game.id };
+    }),
+    searchGameFromRoom: protectedProcedure
+    .input(z.object({ roomId: z.string() }))
+    .query(async ({ input }) => {
+      const { roomId } = input;
+      const game = await db.game.findUnique({
+        where: { roomId: roomId },
+      });
+
+      if (!game) {
+        throw new Error("Room not found");
+      }
 
       return { gameId: game.id };
     }),

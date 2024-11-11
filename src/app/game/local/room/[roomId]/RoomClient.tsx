@@ -22,6 +22,7 @@ export default function RoomClient({ session }: { session: Session | null }) {
   const createPlayer = api.room.joinRoom.useMutation()
   const updatePlayerRole = api.room.updatePlayerRole.useMutation()
   const leaveRoom = api.room.leaveRoom.useMutation()
+  const searchGameFromRoom = api.room.searchGameFromRoom.useQuery({ roomId: validRoomId }, { enabled: false })
   const [selectedRole, setSelectedRole] = useState<"HINTER" | "GUESSER">("GUESSER")
 
   const createGame = api.room.createGameFromRoom.useMutation({
@@ -54,6 +55,14 @@ export default function RoomClient({ session }: { session: Session | null }) {
         router.push("/game")
       }
     }
+    if (room?.status == "READY") {
+      console.log("room", room)
+      void searchGameFromRoom.refetch().then(() => {
+        if (searchGameFromRoom.data) {
+          router.push(`/game/local/${searchGameFromRoom.data.gameId}`);
+        }
+      });
+    }
   }, [session, validRoomId, room])
 
   useEffect(() => {
@@ -76,7 +85,6 @@ export default function RoomClient({ session }: { session: Session | null }) {
     }
   }
 
-  
   useEffect(() => {
     if (room && session) {
       const currentPlayer = room.players.find(p => p.user.id === session.user.id);
