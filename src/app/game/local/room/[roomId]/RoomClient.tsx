@@ -29,7 +29,7 @@ export default function RoomClient({ session }: { session: Session | null }) {
       router.push(`/game/local/${data.gameId}`);
     },
     onError: (error) => {
-      // Handle error, e.g., show a notification
+      console.error("Failed to create game:", error);
     },
   });
 
@@ -68,6 +68,10 @@ export default function RoomClient({ session }: { session: Session | null }) {
     if (session && validRoomId) {
       setSelectedRole(role)
       updatePlayerRole.mutate({ roomId: validRoomId, role })
+      const currentPlayer = room?.players.find(p => p.user.id === session.user.id);
+      if (!currentPlayer) {
+        setCreatedPlayer(false);
+      }
       void refetch()
     }
   }
@@ -93,46 +97,84 @@ export default function RoomClient({ session }: { session: Session | null }) {
   }, [refetch])
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-4">Room</h1>
-      <p className="text-lg mb-4">Room ID: {roomId}</p>
-      {room ? (
-        <div className="space-y-4">
-          <p className="text-lg">Codice della Stanza: {room.code}</p>
-          <p className="text-lg">Numero di Giocatori: {room.players.length}/3</p>
-          <ul className="space-y-2">
-            {room.players.map((player) => (
-              <li key={player.user.id} className="flex items-center space-x-2">
-                <Image src={player.user.image ?? "/default-profile.png"} alt={`${player.user.name}'s profile`} className="w-8 h-8 rounded-full" width={32} height={32} />
-                <span>{player.user.name} - {player.role}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="flex space-x-4">
-            <Button variant="personal" onClick={() => handleRoleChange("HINTER")}>Diventa Hinter</Button>
-            <Button variant="personal" onClick={() => handleRoleChange("GUESSER")}>Diventa Guesser</Button>
+    <div className="flex items-center justify-center ">
+      <div className="rounded-lg w-full max-w-md">
+        
+        {room ? (
+          <div className="space-y-2">
+            <h1 className="text-3xl text-center text-dark font-semibold">Room Code: {room.code}</h1>
+            <p className="text-lg text-center text-dark">Players: {room.players.length}/3</p>
+            
+            <div className="space-y-4">
+                {room.players.map((player) => (
+                <div key={player.user.id} className="rounded-lg p-4 flex items-center space-x-4 border-2 border-dark">
+                  <Image 
+                  src={player.user.image ?? "/default-profile.png"} 
+                  alt={`${player.user.name}'s profile`} 
+                  className="w-12 h-12 rounded-full border-2 border-second" 
+                  width={48} 
+                  height={48} 
+                  />
+                  <div>
+                  <p className="font-semibold text-dark">{player.user.name}</p>
+                  <p className="text-sm text-dark">{player.role}</p>
+                  </div>
+                </div>
+                ))}
+              
+              {room.players.length < 3 && (
+                <div className="border-2 border-dashed border-second rounded-lg p-4 flex items-center justify-center h-[76px]">
+                  <p className="text-second">Waiting...</p>
+                </div>
+              )}
+              
+              {room.players.length < 2 && (
+                <div className="border-2 border-dashed border-second rounded-lg p-4 flex items-center justify-center h-[76px]">
+                  <p className="text-second">Waiting...</p>
+                </div>
+              )}
+              {room.players.length < 1 && (
+                <div className="border-2 border-dashed border-second rounded-lg p-4 flex items-center justify-center h-[76px]">
+                  <p className="text-second">Waiting...</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-between">
+              <Button 
+                variant="personal" 
+                onClick={() => handleRoleChange("HINTER")}
+              >
+                Become Hinter
+              </Button>
+              <Button 
+                variant="personal" 
+                onClick={() => handleRoleChange("GUESSER")}
+              >
+                Become Guesser
+              </Button>
+            </div>
+            
+            <div className="mt-6">
+              <Button 
+                variant="personal" 
+                className="w-full bg-third hover:bg-lime-400 text-white"
+                onClick={() => createGame.mutate({ roomId: validRoomId })} 
+                disabled={!canCreateGame}
+              >
+                Create Game
+              </Button>
+              {!canCreateGame && (
+                <p className="text-dark mt-2 text-center text-sm">
+                  The game can only be created when there are 3 players: 2 Hinters and 1 Guesser.
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      ) : (
-        <p className="text-lg">Loading room information...</p>
-      )}
-      {room && (
-        <div className="mt-4">
-          <Button
-            variant="personal"
-            onClick={() => createGame.mutate({ roomId: validRoomId })}
-            disabled={!canCreateGame}
-          >
-            Crea Partita
-          </Button>
-          {!canCreateGame && (
-            <p className="text-red-500 mt-2">
-              La partita può essere creata solo quando ci sono 3 giocatori: 2 Hinter e 1 Guesser.
-            </p>
-          )}
-        </div>
-      )}
-      <p className="text-lg mt-4">Session: {session ? session.user.name : "No session"}</p>
+        ) : (
+          <p className="text-lg text-center text-dark">Loading room information...</p>
+        )}
+      </div>
     </div>
   )
 }
