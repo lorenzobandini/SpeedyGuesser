@@ -50,6 +50,19 @@ model Game {
   endedAt       DateTime?
   gameType      String
   words         GameWord[]
+  gameStates    GameState[]
+}
+
+model GameState {
+  id              String    @id @default(cuid())
+  game            Game      @relation(fields: [gameId], references: [id])
+  gameId          String
+  actualTime      Int
+  actualScore     Int
+  actualPass      Int
+  actualIndexWord Int
+  actualStatus    String
+  isTimerRunning  Boolean
 }
 
 model GameWord {

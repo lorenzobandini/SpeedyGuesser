@@ -224,11 +224,26 @@ export const roomRouter = createTRPCRouter({
         },
       });
 
-      // Optionally, you can emit an event or handle additional logic here
-
       return { gameId: game.id };
     }),
 
+  getPlayerRole: protectedProcedure
+    .input(z.object({ roomId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const { roomId } = input;
+      const userId = ctx.session.user.id;
+
+      const player = await db.roomPlayer.findFirst({
+        where: {
+          roomId,
+          userId,
+        },
+      });
+
+      return { role: player?.role };
+    }),
+
+  // Subscriptions
   onRoomUpdate: protectedProcedure
     .input(z.object({ roomId: z.string() }))
     .subscription(({ input }) => {
