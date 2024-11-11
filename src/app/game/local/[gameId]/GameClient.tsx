@@ -65,6 +65,10 @@ export default function GameClient({ session }: { session: Session | null }) {
     : (gameIdParam ?? "");
 
   const [gameState, setGameState] = useState<GameState>();
+  const [wordRevealed, setWordRevealed] = useState(false);
+  const [hasChosen, setHasChosen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+
 
   const createGameState = api.game.createGameState.useMutation();
   const getGameState = api.game.getGameState.useQuery(
@@ -111,6 +115,20 @@ export default function GameClient({ session }: { session: Session | null }) {
     }
   };
 
+  useEffect(() => {
+    if (gameState && gameState.actualTime > 0 && gameState.isTimerRunning) {
+      const timer = setTimeout(() => {
+        void handleStateChange({
+          ...gameState,
+          actualTime: gameState.actualTime - 1,
+        });
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState]);
+
+
+  
   return (
     <div className="min-h-screen bg-main p-4 text-dark">
       <div className="mx-auto max-w-6xl">
@@ -121,15 +139,15 @@ export default function GameClient({ session }: { session: Session | null }) {
           <div className="flex items-center space-x-4">
             <div className="hidden text-2xl font-bold sm:block">Tempo:</div>
             <div className="flex h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-dark bg-second font-mono text-5xl font-bold text-dark">
-              {remainingTime}
+              {gameState?.actualTime ?? 0}
             </div>
           </div>
         </div>
 
         <div className="mb-8 flex items-center justify-center">
           <div className="flex h-20 w-full max-w-2xl items-center justify-center rounded-xl border-2 border-dashed border-dark bg-third font-mono text-4xl font-bold text-dark">
-            {wordRevealed
-              ? (someWords.data?.[currentWordIndex] ?? "")
+              {wordRevealed && gameState
+              ? getWords.data?.[gameState.actualIndexWord]?.word ?? ""
               : "?????"}
           </div>
         </div>
@@ -138,7 +156,7 @@ export default function GameClient({ session }: { session: Session | null }) {
           <div className="flex w-1/4 flex-col items-center">
             <div className="text-2xl font-bold">Punteggio</div>
             <div className="mt-2 flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-dark bg-second font-mono text-3xl font-bold text-dark">
-              {score.toString().padStart(2, "0")}
+              {gameState?.actualScore.toString().padStart(2, "0")}
             </div>
           </div>
 
@@ -149,14 +167,14 @@ export default function GameClient({ session }: { session: Session | null }) {
               onClick={togglePause}
               className="flex h-32 w-32 items-center justify-center rounded-full bg-dark text-6xl text-white transition-colors hover:bg-dark/80"
             >
-              {isPaused ? <FaPlay /> : <FaPause />}
+              {!gameState?.isTimerRunning ? <FaPlay /> : <FaPause />}
             </Button>
           </div>
 
           <div className="flex w-1/4 flex-col items-center">
             <div className="text-2xl font-bold text-dark">Passi</div>
             <div className="mt-2 flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-dark bg-second font-mono text-3xl font-bold">
-              {remainingPasses}
+              {gameState?.actualPass}
             </div>
           </div>
         </div>
@@ -166,7 +184,7 @@ export default function GameClient({ session }: { session: Session | null }) {
             variant="personal"
             size="lg"
             onClick={handleIncorrect}
-            disabled={!isPaused || !wordRevealed || hasChosen || isProcessing}
+            disabled={gameState?.isTimerRunning ?? !wordRevealed ?? hasChosen ?? isProcessing}
             className="flex h-24 w-24 items-center justify-center rounded-full bg-dark text-4xl text-white transition-all hover:bg-dark/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <FaMinus />
@@ -176,8 +194,8 @@ export default function GameClient({ session }: { session: Session | null }) {
             size="lg"
             onClick={handlePass}
             disabled={
-              remainingPasses === 0 ||
-              !isPaused ||
+              gameState?.actualPass === 0 ||
+              gameState?.isTimerRunning ||
               !wordRevealed ||
               hasChosen ||
               isProcessing
@@ -190,7 +208,7 @@ export default function GameClient({ session }: { session: Session | null }) {
             variant="personal"
             size="lg"
             onClick={handleCorrect}
-            disabled={!isPaused || !wordRevealed || hasChosen || isProcessing}
+            disabled={gameState?.isTimerRunning ?? !wordRevealed ?? hasChosen ?? isProcessing}
             className="flex h-24 w-24 items-center justify-center rounded-full bg-dark text-4xl text-white transition-all hover:bg-dark/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <FaPlus />
