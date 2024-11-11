@@ -24,6 +24,14 @@ swSelf.addEventListener('notificationclick', function (event) {
   );
 });
 
+swSelf.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open('offline-cache').then((cache) => {
+      return cache.addAll(['/offline.html']);
+    })
+  );
+});
+
 swSelf.addEventListener('fetch', (event) => {
   const fetchEvent = /** @type {FetchEvent} */ (event);
   fetchEvent.respondWith(
