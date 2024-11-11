@@ -12,6 +12,7 @@ export default function Footer() {
     /^\/game\/single\/[^/]+$/,
     /^\/stats\/[^/]+$/,
     /^\/game\/local\/[^/]+$/,
+    /^\/game\/local\/room\/[^/]+$/,
     /^\/game\/online\/[^/]+$/
   ]
 
