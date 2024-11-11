@@ -5,19 +5,39 @@ import type { Session } from "next-auth"
 import { api } from "~/trpc/react"
 import { Button } from "~/components/ui/button"
 import Image from "next/image"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+
 
 export default function RoomClient({ session }: { session: Session | null }) {
   const router = useRouter()
-  const { roomId } = useParams()
-  const validRoomId = Array.isArray(roomId) ? roomId[0] : roomId
+  const params = useParams<Record<string, string | string[]>>()
+  const roomId = params?.roomId
+  const validRoomId = typeof roomId === "string" ? roomId : roomId?.[0] ?? ""
+  const [ createdPlayer, setCreatedPlayer ] = useState(false)
 
-  const { data: room, refetch } = api.game.getRoomById.useQuery(
+  const { data: room, refetch } = api.room.getRoomById.useQuery(
     { roomId: validRoomId ?? "" },
     { refetchOnWindowFocus: false }
   )
-  const createPlayer = api.game.joinRoom.useMutation()
-  const updatePlayerRole = api.game.updatePlayerRole.useMutation()
+  const createPlayer = api.room.joinRoom.useMutation()
+  const updatePlayerRole = api.room.updatePlayerRole.useMutation()
+  const leaveRoom = api.room.leaveRoom.useMutation()
+  const [selectedRole, setSelectedRole] = useState<"HINTER" | "GUESSER">("GUESSER")
+
+  const createGame = api.room.createGameFromRoom.useMutation({
+    onSuccess: (data) => {
+      router.push(`/game/local/${data.gameId}`);
+    },
+    onError: (error) => {
+      // Handle error, e.g., show a notification
+    },
+  });
+
+  const canCreateGame =
+    room &&
+    room.players.length === 3 &&
+    room.players.filter(p => p.role === "HINTER").length === 2 &&
+    room.players.filter(p => p.role === "GUESSER").length === 1;
 
   useEffect(() => {
     if (!session) {
@@ -26,17 +46,43 @@ export default function RoomClient({ session }: { session: Session | null }) {
   }, [session, router])
 
   useEffect(() => {
-    if (session && validRoomId) {
-      createPlayer.mutate({ roomId: validRoomId, role: "GUESSER" })
+    if (session && room && !createdPlayer) {
+      if (room.players.length < 3 && validRoomId) {
+        createPlayer.mutate({ roomId: validRoomId, role: selectedRole })
+        setCreatedPlayer(true)
+      } else {
+        router.push("/game")
+      }
+    }
+  }, [session, validRoomId, room])
+
+  useEffect(() => {
+    return () => {
+      if (session && validRoomId) {
+        leaveRoom.mutate({ roomId: validRoomId })
+      }
     }
   }, [session, validRoomId])
 
   const handleRoleChange = (role: "HINTER" | "GUESSER") => {
     if (session && validRoomId) {
+      setSelectedRole(role)
       updatePlayerRole.mutate({ roomId: validRoomId, role })
       void refetch()
     }
   }
+
+  
+  useEffect(() => {
+    if (room && session) {
+      const currentPlayer = room.players.find(p => p.user.id === session.user.id);
+      if (currentPlayer) {
+        if (currentPlayer.role === "HINTER" || currentPlayer.role === "GUESSER") {
+          setSelectedRole(currentPlayer.role);
+        }
+      }
+    }
+  }, [room, session]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -53,7 +99,7 @@ export default function RoomClient({ session }: { session: Session | null }) {
       {room ? (
         <div className="space-y-4">
           <p className="text-lg">Codice della Stanza: {room.code}</p>
-          <p className="text-lg">Numero di Giocatori: {room.players.length}</p>
+          <p className="text-lg">Numero di Giocatori: {room.players.length}/3</p>
           <ul className="space-y-2">
             {room.players.map((player) => (
               <li key={player.user.id} className="flex items-center space-x-2">
@@ -69,6 +115,22 @@ export default function RoomClient({ session }: { session: Session | null }) {
         </div>
       ) : (
         <p className="text-lg">Loading room information...</p>
+      )}
+      {room && (
+        <div className="mt-4">
+          <Button
+            variant="personal"
+            onClick={() => createGame.mutate({ roomId: validRoomId })}
+            disabled={!canCreateGame}
+          >
+            Crea Partita
+          </Button>
+          {!canCreateGame && (
+            <p className="text-red-500 mt-2">
+              La partita può essere creata solo quando ci sono 3 giocatori: 2 Hinter e 1 Guesser.
+            </p>
+          )}
+        </div>
       )}
       <p className="text-lg mt-4">Session: {session ? session.user.name : "No session"}</p>
     </div>

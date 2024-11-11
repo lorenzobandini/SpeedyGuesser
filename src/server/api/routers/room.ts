@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { db } from "~/server/db";
@@ -83,7 +82,15 @@ export const roomRouter = createTRPCRouter({
       const { roomId, role } = input;
       const userId = ctx.session.user.id;
 
-      console.log("Joining room", roomId, role, userId);
+      const room = await db.room.findUnique({
+        where: { id: roomId },
+        include: { players: true },
+      });
+
+      if (room && room.players.length >= 3) {
+        throw new Error("La stanza è già piena.");
+      }
+
       const existingPlayer = await db.roomPlayer.findFirst({
         where: {
           roomId,
@@ -91,16 +98,13 @@ export const roomRouter = createTRPCRouter({
         },
       });
 
-      console.log("Existing player", existingPlayer);
 
       if (existingPlayer) {
-        console.log("Player already exists, updating role");
         await db.roomPlayer.update({
           where: { id: existingPlayer.id },
           data: { role },
         });
       } else {
-        console.log("Player does not exist, creating new player");
         await db.roomPlayer.create({
           data: {
             roomId,
@@ -159,7 +163,7 @@ export const roomRouter = createTRPCRouter({
         roomEvents.emit(`roomUpdate:${roomId}`);
         roomPlayerEvents.emit(`roomPlayerUpdate:${roomId}`);
         return { success: true };
-      }else{
+      } else {
         return { success: false };
       }
     }),
@@ -185,6 +189,46 @@ export const roomRouter = createTRPCRouter({
       return { roomId: room.id };
     }),
 
+  createGameFromRoom: protectedProcedure
+    .input(z.object({ roomId: z.string() }))
+    .mutation(async ({ input }) => {
+      const { roomId } = input;
+      const room = await db.room.findUnique({
+        where: { id: roomId },
+        include: { players: true },
+      });
+
+      if (!room) {
+        throw new Error("Room not found");
+      }
+
+      if (room.players.length !== 3) {
+        throw new Error("Sono necessari esattamente 3 giocatori per iniziare la partita");
+      }
+
+      const hinterCount = room.players.filter(p => p.role === "HINTER").length;
+      const guesserCount = room.players.filter(p => p.role === "GUESSER").length;
+
+      if (hinterCount !== 2 || guesserCount !== 1) {
+        throw new Error("La partita richiede 2 Hinter e 1 Guesser");
+      }
+
+      const game = await db.game.create({
+        data: {
+          roomId: room.id,
+          language: room.language,
+          timeLimit: room.timeLimit,
+          pass: room.pass,
+          gameType: "LOCAL_MULTIPLAYER",
+          status: "ONGOING",
+        },
+      });
+
+      // Optionally, you can emit an event or handle additional logic here
+
+      return { gameId: game.id };
+    }),
+
   onRoomUpdate: protectedProcedure
     .input(z.object({ roomId: z.string() }))
     .subscription(({ input }) => {
@@ -208,7 +252,6 @@ export const roomRouter = createTRPCRouter({
         void sendUpdate();
 
         const onRoomUpdate = () => {
-          console.log("Room update event received");
           void sendUpdate();
         };
 
@@ -243,7 +286,6 @@ export const roomRouter = createTRPCRouter({
         void sendUpdate();
 
         const onPlayerUpdate = () => {
-          console.log("RoomPlayer update event received");
           void sendUpdate();
         };
 
