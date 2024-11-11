@@ -26,7 +26,7 @@ export default function StatsClient({ game }: { game: Game }) {
     };
 
     const onRestart = () => {
-        router.push('game/single');
+        router.push('/game');
     };
 
     const onHome = () => {

@@ -34,7 +34,7 @@ export default async function SelectMode() {
                 {session ? (
                     <>
                         <RoomButton mode="local" />
-                        <RoomButton mode="online" />
+                        <Button variant={"personal"} size={"xl"} disabled>Online</Button>
                     </>
                 ) : (
                     <>

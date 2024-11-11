@@ -1,57 +1,56 @@
-import { getServerAuthSession } from "~/server/auth";
-import Image from "next/image";
+'use client'
 
-export default async function ProfilePage() {
-    const session = await getServerAuthSession();
-    const userName = session?.user?.name;
-    const userImage = session?.user?.image;
-  
-    return (
-      <div className="flex flex-col items-center justify-center  text-dark">
-        <div className="bg-light shadow-lg rounded-lg p-8 w-full max-w-md">
-          <div className="flex items-center justify-center">
-            {userImage && (
-              <Image
-                src={userImage}
-                alt="User Image"
-                width={100}
-                height={100}
-                className="rounded-full"
-              />
-            )}
-          </div>
-          <h1 className="text-2xl font-bold mt-4 text-center">{userName}</h1>
-          <div className="grid grid-cols-2 gap-4 mt-6">
-            <div>
-              <h3 className="text-lg font-semibold">Record Punteggio</h3>
-              <p className="text-gray-600">1234</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">Partite Giocate</h3>
-              <p className="text-gray-600">50</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">Posizione in Classifica</h3>
-              <p className="text-gray-600">12</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">Miglior Compagno</h3>
-              <p className="text-gray-600">Player X</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">Numero di Amici</h3>
-              <p className="text-gray-600">25</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">Ultimo Accesso</h3>
-              <p className="text-gray-600">2 giorni fa</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">Media Punteggio</h3>
-              <p className="text-gray-600">800</p>
-            </div>
-          </div>
+import { useRouter } from "next/navigation";
+import { api } from "~/trpc/react";
+import { ScrollArea } from "~/components/ui/scroll-area";
+import { Button } from "~/components/ui/button";
+
+interface ProfileContentProps {
+  closeDialog: () => void;
+}
+
+export default function ProfileContent({ closeDialog }: ProfileContentProps) {
+  const router = useRouter();
+
+  const { data: stats } = api.game.getUserStatistics.useQuery();
+  const { data: lastGames } = api.game.getUserLastGames.useQuery();
+
+  return (
+    <>
+      <div className="mt-6 grid grid-cols-2 gap-4">
+        <div>
+          <h3 className="text-lg font-semibold">Partite Giocate</h3>
+          <p className="text-dark">{stats?.gamesPlayed ?? 0}</p>
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold">Punteggio Più Alto</h3>
+          <p className="text-dark">{stats?.highestScore ?? 0}</p>
         </div>
       </div>
-    );
+
+      <h3 className="mt-6 text-lg font-semibold">Cronologia Partite</h3>
+      <ScrollArea className="mt-4 h-64">
+        <ul>
+          {lastGames?.map((game) => (
+            <li key={game.id} className="mb-4 flex justify-between items-center">
+              <div>
+                <p className="text-dark">
+                  {game.language} - {game.timeLimit}s - Pass: {game.pass}
+                </p>
+                <p className="text-dark text-sm">
+                  Punteggio: {game.score} - Errori: {game.mistakes}
+                </p>
+              </div>
+              <Button onClick={() => { 
+                closeDialog();
+                router.push(`/stats/${game.id}`); 
+              }}>
+                Dettagli
+              </Button>
+            </li>
+          ))}
+        </ul>
+      </ScrollArea>
+    </>
+  );
 }

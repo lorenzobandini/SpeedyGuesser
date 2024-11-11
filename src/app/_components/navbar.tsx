@@ -1,6 +1,6 @@
-import InfoButton  from "./(buttons)/infoButton";
+import InfoButton from "./(buttons)/infoButton";
 import LogButton from "./(buttons)/logButton";
-import ProfileButton from "./(buttons)/profileButton";
+import ProfileButton from "./profileContext";
 import GuestProfileButton from "./(buttons)/guestProfileButton";
 import { getServerAuthSession } from "~/server/auth";
 
