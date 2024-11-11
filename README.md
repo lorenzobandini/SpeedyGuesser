@@ -1,29 +1,139 @@
-# Create T3 App
+# **SpeedyGuesser** ⚡
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+> _"Sfida i tuoi amici e scopri chi è il più veloce a indovinare! Una gara di intuizione e velocità."_  
 
-## What's next? How do I make an app with this?
+---
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## **Indice** 📚
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+- [**SpeedyGuesser** ⚡](#speedyguesser-)
+  - [**Indice** 📚](#indice-)
+  - [**Descrizione del Progetto**](#descrizione-del-progetto)
+  - [**Come Si Usa** 🛠️](#come-si-usa-️)
+  - [**Modalità di Gioco** 🎮](#modalità-di-gioco-)
+    - [**Modalità Offline**](#modalità-offline)
+    - [**Modalità Singola**](#modalità-singola)
+    - [**Modalità Locale**](#modalità-locale)
+  - [**Tecnologie Utilizzate** 🧰](#tecnologie-utilizzate-)
+  - [**Contributi** 🤝](#contributi-)
+  - [**Licenza** 📜](#licenza-)
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+---
 
-## Learn More
+## **Descrizione del Progetto**
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+**SpeedyGuesser** è un gioco coinvolgente in cui due squadre competono per indovinare il maggior numero di parole nel minor tempo possibile.  
+Il progetto è basato su **[Create T3 App](https://create.t3.gg/)**, che garantisce un'architettura scalabile e moderna per le applicazioni web.
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+- **Versione attuale**: 1.0.0
+- **Sviluppatore**: Lorenzo Bandini  
+  📧 Email: [bandinilorenzo02@gmail.com](mailto:bandinilorenzo02@gmail.com)
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+---
 
-## How do I deploy this?
+## **Come Si Usa** 🛠️
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+_Fornisci i seguenti passaggi per installare e avviare il progetto localmente._
+
+1. Clona il repository:
+
+   ```bash
+   git clone https://github.com/tuo-utente/speedyguesser.git
+   ```
+
+2. Accedi alla cartella del progetto:
+
+   ```bash
+   cd speedyguesser
+   ```
+
+3. Copia il file `.env.example` e personalizza il tuo `.env`:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Installa le dipendenze:
+
+   ```bash
+   npm install
+   ```
+
+5. Avvia l'app in modalità di sviluppo:
+
+   ```bash
+   npm run dev
+   ```
+
+6. (Facoltativo) Apri Prisma Studio per gestire il database:
+
+   ```bash
+   npx prisma studio
+   ```
+
+**Nota**: SpeedyGuesser è una **Progressive Web App (PWA)** e può essere installata sul tuo dispositivo per un'esperienza nativa.
+
+---
+
+## **Modalità di Gioco** 🎮
+
+SpeedyGuesser offre tre modalità di gioco per adattarsi a ogni situazione:
+
+### **Modalità Offline**
+
+- Nessuna autenticazione richiesta.
+- Gioca su un singolo dispositivo.
+- I risultati non vengono salvati.
+
+### **Modalità Singola**
+
+- Richiede l'autenticazione.
+- Simile alla modalità offline, ma i risultati vengono salvati.
+
+### **Modalità Locale**
+
+- Richiede l'autenticazione.
+- Permette di giocare su più dispositivi sincronizzati in tempo reale.
+- Ogni giocatore può scegliere il proprio ruolo e i risultati vengono salvati.
+
+---
+
+## **Tecnologie Utilizzate** 🧰
+
+**SpeedyGuesser** è stato costruito utilizzando un insieme di tecnologie moderne e performanti:
+
+- **TypeScript**: Per un codice più sicuro e leggibile.
+- **Next.js**: Framework React per creare applicazioni web server-rendered.
+- **Tailwind CSS**: Per un design rapido e responsivo.
+- **Prisma**: ORM per interagire con il database in modo semplice.
+- **tRPC**: Per API type-safe tra il client e il server.
+- **PWA**: Supporta installazione e le notifiche.
+
+---
+
+## **Contributi** 🤝
+
+Vuoi contribuire?  
+Segui questi semplici passaggi:
+
+1. Fai un fork del progetto.
+2. Crea un branch per le modifiche:
+
+   ```bash
+   git checkout -b feature/nuova-funzionalità
+   ```
+
+3. Effettua il commit delle modifiche:
+
+   ```bash
+   git commit -m "Aggiunta della nuova funzionalità"
+   ```
+
+4. Invia una pull request!
+
+---
+
+## **Licenza** 📜
+
+Questo progetto è distribuito sotto la licenza **MIT**.  
+Consulta il file [LICENSE](./LICENSE) per ulteriori dettagli.

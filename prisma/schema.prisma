@@ -1,29 +1,95 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
 }
 
 datasource db {
     provider = "sqlite"
-    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Room {
+  id            String    @id @default(cuid())
+  code          Int       @unique
+  gameType      String    
+  status        String    @default("WAITING")
+  language      String
+  timeLimit     Int
+  pass          Int
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  players       RoomPlayer[]
+  game          Game?
+}
 
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
+model RoomPlayer {
+  id            String    @id @default(cuid())
+  role          String    
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  room          Room      @relation(fields: [roomId], references: [id])
+  roomId        String
+  joinedAt      DateTime  @default(now())
 
-    @@index([name])
+  @@unique([userId, roomId])
+}
+
+model Game {
+  id            String    @id @default(cuid())
+  room          Room?     @relation(fields: [roomId], references: [id])
+  roomId        String?   @unique
+  user          User?     @relation(fields: [userId], references: [id])
+  userId        String?
+  score         Int       @default(0)
+  language      String
+  timeLimit     Int
+  pass          Int
+  passUsed      Int       @default(0)
+  mistakes      Int       @default(0)
+  status        String    @default("WAITING")
+  startedAt     DateTime  @default(now())
+  endedAt       DateTime?
+  gameType      String
+  words         GameWord[]
+  gameStates    GameState[]
+}
+
+model GameState {
+  id              String    @id @default(cuid())
+  game            Game      @relation(fields: [gameId], references: [id])
+  gameId          String
+  actualTime      Int
+  actualScore     Int
+  actualPass      Int
+  actualIndexWord Int
+  actualStatus    String
+  hasChosen       Boolean
+  isTimerRunning  Boolean
+  wordRevealed    Boolean
+}
+
+model GameWord {
+  id            String    @id @default(cuid())
+  game          Game      @relation(fields: [gameId], references: [id])
+  gameId        String
+  word          Word      @relation(fields: [wordId], references: [id])
+  wordId        String
+  status        String    @default("PENDING")
+  order         Int
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([gameId, order])
+}
+
+model Word {
+  id         String   @id @default(cuid())
+  word       String
+  language   String
+  difficulty Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  gameWords  GameWord[]
+
+  @@unique([word, language])
 }
 
 // Necessary for Next auth
@@ -33,12 +99,12 @@ model Account {
     type                     String
     provider                 String
     providerAccountId        String
-    refresh_token            String? // @db.Text
-    access_token             String? // @db.Text
+    refresh_token            String? 
+    access_token             String? 
     expires_at               Int?
     token_type               String?
     scope                    String?
-    id_token                 String? // @db.Text
+    id_token                 String? 
     session_state            String?
     user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
     refresh_token_expires_in Int?
@@ -60,9 +126,14 @@ model User {
     email         String?   @unique
     emailVerified DateTime?
     image         String?
+    gamesPlayed   Int       @default(0)
+    highScore     Int       @default(0)
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
     accounts      Account[]
     sessions      Session[]
-    posts         Post[]
+    rooms         RoomPlayer[]
+    games         Game[]
 }
 
 model VerificationToken {

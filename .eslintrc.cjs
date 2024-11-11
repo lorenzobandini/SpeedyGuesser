@@ -2,7 +2,9 @@
 const config = {
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "project": true
+    "project": "./tsconfig.json", // Assicurati che il percorso sia corretto
+    "tsconfigRootDir": __dirname,
+    "sourceType": "module"
   },
   "plugins": [
     "@typescript-eslint"
@@ -36,7 +38,9 @@ const config = {
           "attributes": false
         }
       }
-    ]
+    ],
+    "@typescript-eslint/no-unsafe-call": "error",
+    "@typescript-eslint/no-unsafe-member-access": "error"
   }
 }
 module.exports = config;

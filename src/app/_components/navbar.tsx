@@ -1,12 +1,19 @@
-import { CiCircleInfo } from "react-icons/ci";
-import { Button } from "~/components/ui/button";
+import InfoButton from "./(buttons)/infoButton";
+import LogButton from "./(buttons)/logButton";
+import ProfileButton from "./profileContext";
+import GuestProfileButton from "./(buttons)/guestProfileButton";
+import { getServerAuthSession } from "~/server/auth";
 
-export default function Navbar() {
+export default async function Navbar() {
+  const session = await getServerAuthSession();
+
   return (
-    <nav className="flex justify-end bg-transparent p-2">
-      <Button variant={"ghost"} size={"icon"}>
-        <CiCircleInfo size={38} />  
-      </Button>
+    <nav className="flex justify-between bg-transparent p-3">
+      <div className="flex items-center">
+        {session ? <ProfileButton /> : <GuestProfileButton />}
+        <LogButton />
+      </div>
+      <InfoButton />
     </nav>
   );
 }

@@ -23,6 +23,7 @@ const config = {
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },
+      
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -57,6 +58,23 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        main: "#ff7800",
+        dark: "#24222d",
+        second: "#cc4440",
+        third: "#fad2ad",
+        light: "#f7f8f7",
+        success: {
+          DEFAULT: '#10B981',
+          foreground: '#FFFFFF',
+        },
+        warning: {
+          DEFAULT: '#F59E0B',
+          foreground: '#FFFFFF',
+        },
+        info: {
+          DEFAULT: '#3B82F6',
+          foreground: '#FFFFFF',
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -72,10 +90,15 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "caret-blink": {
+          "0%,70%,100%": { opacity: "1" },
+          "20%,50%": { opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "caret-blink": "caret-blink 1.25s ease-out infinite",
       },
     },
   },
