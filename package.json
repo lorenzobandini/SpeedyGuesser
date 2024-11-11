@@ -17,7 +17,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "dev": "next dev --turbo",
+    "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start"
@@ -46,6 +46,7 @@
     "lucide-react": "^0.428.0",
     "next": "^14.2.14",
     "next-auth": "^4.24.7",
+    "next-pwa": "^5.6.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-icons": "^5.3.0",
@@ -53,13 +54,16 @@
     "superjson": "^2.2.1",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
+    "web-push": "^3.6.7",
     "zod": "^3.23.3"
   },
   "devDependencies": {
     "@types/eslint": "^8.56.2",
+    "@types/next-pwa": "^5.6.9",
     "@types/node": "^20.14.15",
     "@types/react": "^18.2.57",
     "@types/react-dom": "^18.2.19",
+    "@types/web-push": "^3.6.4",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
     "eslint": "^8.57.0",

@@ -14,7 +14,7 @@ export const metadata = {
   title: "SpeedyGuesser",
   description:
     "Game to be played by three people where two people have to make the third person guess as many words as possible by saying one word each",
-  icons: [{ rel: "icon", url: "/speedyguessericon.ico" }],
+  icons: [{ rel: "icon", url: "/SpeedyGuesserLogo-LittleRounded.ico" }],
 };
 
 export default function RootLayout({
