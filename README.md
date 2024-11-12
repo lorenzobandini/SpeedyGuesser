@@ -38,7 +38,7 @@ _Fornisci i seguenti passaggi per installare e avviare il progetto localmente._
 1. Clona il repository:
 
    ```bash
-   git clone https://github.com/tuo-utente/speedyguesser.git
+   git clone https://github.com/lorenzobandini/speedyguesser.git
    ```
 
 2. Accedi alla cartella del progetto:
