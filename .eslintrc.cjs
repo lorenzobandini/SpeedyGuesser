@@ -2,15 +2,19 @@
 const config = {
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    "project": "./tsconfig.json", // Assicurati che il percorso sia corretto
-    "tsconfigRootDir": __dirname,
-    "sourceType": "module"  },  plugins: [
+    project: "./tsconfig.json",
+    tsconfigRootDir: __dirname,
+    sourceType: "module",
+  },
+  plugins: [
     // @ts-ignore
-    "@typescript-eslint"
-  ],extends: [
+    "@typescript-eslint",
+  ],
+  extends: [
     "next/core-web-vitals",
     "plugin:@typescript-eslint/recommended-type-checked",
-    "plugin:@typescript-eslint/stylistic-type-checked"
+    "plugin:@typescript-eslint/stylistic-type-checked",
+    "prettier",
   ],
   rules: {
     "@typescript-eslint/array-type": "off",
@@ -18,27 +22,28 @@ const config = {
     "@typescript-eslint/consistent-type-imports": [
       "warn",
       {
-        "prefer": "type-imports",
-        "fixStyle": "inline-type-imports"
-      }
+        prefer: "type-imports",
+        fixStyle: "inline-type-imports",
+      },
     ],
     "@typescript-eslint/no-unused-vars": [
       "warn",
       {
-        "argsIgnorePattern": "^_"
-      }
+        argsIgnorePattern: "^_",
+      },
     ],
     "@typescript-eslint/require-await": "off",
     "@typescript-eslint/no-misused-promises": [
       "error",
       {
-        "checksVoidReturn": {
-          "attributes": false
-        }
-      }
+        checksVoidReturn: {
+          attributes: false,
+        },
+      },
     ],
     "@typescript-eslint/no-unsafe-call": "error",
-    "@typescript-eslint/no-unsafe-member-access": "error"
-  }
-}
+    "@typescript-eslint/no-unsafe-member-access": "error",
+  },
+};
+
 module.exports = config;
