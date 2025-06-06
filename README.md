@@ -1,151 +1,150 @@
 # **SpeedyGuesser** ⚡
 
-> _"Sfida i tuoi amici e scopri chi è il più veloce a indovinare! Una gara di intuizione e velocità."_  
+> _"Challenge your friends and find out who's the fastest at guessing! A race of intuition and speed."_  
 
 ---
 
-## **Indice** 📚
+## **Table of Contents** 📚
 
 - [**SpeedyGuesser** ⚡](#speedyguesser-)
-  - [**Indice** 📚](#indice-)
-  - [**Descrizione del Progetto**](#descrizione-del-progetto)
-  - [**Come Si Usa** 🛠️](#come-si-usa-️)
-  - [**Modalità di Gioco** 🎮](#modalità-di-gioco-)
-    - [**Modalità Offline**](#modalità-offline)
-    - [**Modalità Singola**](#modalità-singola)
-    - [**Modalità Locale**](#modalità-locale)
-  - [**Tecnologie Utilizzate** 🧰](#tecnologie-utilizzate-)
-  - [**Contributi** 🤝](#contributi-)
-  - [**Licenza** 📜](#licenza-)
+  - [**Table of Contents** 📚](#table-of-contents-)
+  - [**Project Description**](#project-description)
+  - [**How to Use** 🛠️](#how-to-use-️)
+  - [**Game Modes** 🎮](#game-modes-)
+    - [**Offline Mode**](#offline-mode)
+    - [**Single Mode**](#single-mode)
+    - [**Local Mode**](#local-mode)
+  - [**Technologies Used** 🧰](#technologies-used-)
+  - [**Contributions** 🤝](#contributions-)
+  - [**License** 📜](#license-)
 
 ---
 
-## **Descrizione del Progetto**
+## **Project Description**
 
-**SpeedyGuesser** è un gioco coinvolgente in cui due squadre competono per indovinare il maggior numero di parole nel minor tempo possibile.  
-Il progetto è basato su **[Create T3 App](https://create.t3.gg/)**, che garantisce un'architettura scalabile e moderna per le applicazioni web.
+**SpeedyGuesser** is an engaging game where two teams compete to guess the most words in the shortest time possible.  
+The project is based on **[Create T3 App](https://create.t3.gg/)**, which ensures a scalable and modern architecture for web applications.
 
-- **Versione attuale**: 1.0.0
-- **Sviluppatore**: Lorenzo Bandini  
-  📧 Email: [bandinilorenzo02@gmail.com](mailto:bandinilorenzo02@gmail.com)
+- **Current version**: 1.0.0
+- **Developer**: Lorenzo Bandini  
 
 ---
 
-## **Come Si Usa** 🛠️
+## **How to Use** 🛠️
 
-_Fornisci i seguenti passaggi per installare e avviare il progetto localmente._
+_Follow these steps to install and run the project locally._
 
-1. Clona il repository:
+1. Clone the repository:
 
    ```bash
    git clone https://github.com/lorenzobandini/speedyguesser.git
    ```
 
-2. Accedi alla cartella del progetto:
+2. Navigate to the project folder:
 
    ```bash
    cd speedyguesser
    ```
 
-3. Copia il file `.env.example` e personalizza il tuo `.env`:
+3. Copy the `.env.example` file and customize your `.env`:
 
    ```bash
    cp .env.example .env
    ```
 
-4. Installa le dipendenze:
+4. Install dependencies:
 
    ```bash
    pnpm install
    ```
 
-5. Sincronizza il prisma schema con il database:
+5. Sync the prisma schema with the database:
 
    ```bash
    npx prisma db push
    ```
 
-6. Popola il database con i dati iniziali:
+6. Populate the database with initial data:
 
    ```bash
    npx prisma db seed
    ```
 
-7. Avvia l'app in modalità di sviluppo:
+7. Start the app in development mode:
 
    ```bash
    pnpm run dev
    ```
 
-8. (Facoltativo) Apri Prisma Studio per gestire il database:
+8. (Optional) Open Prisma Studio to manage the database:
 
    ```bash
    npx prisma studio
    ```
 
-**Nota**: SpeedyGuesser è una **Progressive Web App (PWA)** e può essere installata sul tuo dispositivo per un'esperienza nativa.
+**Note**: SpeedyGuesser is a **Progressive Web App (PWA)** and can be installed on your device for a native experience.
 
 ---
 
-## **Modalità di Gioco** 🎮
+## **Game Modes** 🎮
 
-SpeedyGuesser offre tre modalità di gioco per adattarsi a ogni situazione:
+SpeedyGuesser offers three game modes to suit every situation:
 
-### **Modalità Offline**
+### **Offline Mode**
 
-- Nessuna autenticazione richiesta.
-- Gioca su un singolo dispositivo.
-- I risultati non vengono salvati.
+- No authentication required.
+- Play on a single device.
+- Results are not saved.
 
-### **Modalità Singola**
+### **Single Mode**
 
-- Richiede l'autenticazione.
-- Simile alla modalità offline, ma i risultati vengono salvati.
+- Requires authentication.
+- Similar to offline mode, but results are saved.
 
-### **Modalità Locale**
+### **Local Mode**
 
-- Richiede l'autenticazione.
-- Permette di giocare su più dispositivi sincronizzati in tempo reale.
-- Ogni giocatore può scegliere il proprio ruolo e i risultati vengono salvati.
-
----
-
-## **Tecnologie Utilizzate** 🧰
-
-**SpeedyGuesser** è stato costruito utilizzando un insieme di tecnologie moderne e performanti:
-
-- **TypeScript**: Per un codice più sicuro e leggibile.
-- **Next.js**: Framework React per creare applicazioni web server-rendered.
-- **Tailwind CSS**: Per un design rapido e responsivo.
-- **Prisma**: ORM per interagire con il database in modo semplice.
-- **tRPC**: Per API type-safe tra il client e il server.
-- **PWA**: Supporta installazione e le notifiche.
+- Requires authentication.
+- Allows playing on multiple devices synchronized in real-time.
+- Each player can choose their own role and results are saved.
 
 ---
 
-## **Contributi** 🤝
+## **Technologies Used** 🧰
 
-Vuoi contribuire?  
-Segui questi semplici passaggi:
+**SpeedyGuesser** has been built using a set of modern and performant technologies:
 
-1. Fai un fork del progetto.
-2. Crea un branch per le modifiche:
+- **TypeScript**: For safer and more readable code.
+- **Next.js**: React framework for creating server-rendered web applications.
+- **Tailwind CSS**: For fast and responsive design.
+- **Prisma**: ORM to interact with the database in a simple way.
+- **tRPC**: For type-safe APIs between client and server.
+- **PWA**: Supports installation and notifications.
+
+---
+
+## **Contributions** 🤝
+
+Want to contribute?  
+Follow these simple steps:
+
+1. Fork the project.
+2. Create a branch for your changes:
 
    ```bash
-   git checkout -b feature/nuova-funzionalità
+   git checkout -b feature/new-feature
    ```
 
-3. Effettua il commit delle modifiche:
+3. Commit your changes:
 
    ```bash
-   git commit -m "Aggiunta della nuova funzionalità"
+   git commit -m "Add new feature"
    ```
 
-4. Invia una pull request!
+4. Submit a pull request!
 
 ---
 
-## **Licenza** 📜
+## **License** 📜
 
-Questo progetto è distribuito sotto la licenza **MIT**.  
-Consulta il file [LICENSE](./LICENSE) per ulteriori dettagli.
+This project is distributed under the **MIT** license.  
+See the [LICENSE](./LICENSE) file for more details.
