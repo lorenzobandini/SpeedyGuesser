@@ -56,16 +56,28 @@ _Fornisci i seguenti passaggi per installare e avviare il progetto localmente._
 4. Installa le dipendenze:
 
    ```bash
-   npm install
+   pnpm install
    ```
 
-5. Avvia l'app in modalità di sviluppo:
+5. Sincronizza il prisma schema con il database:
 
    ```bash
-   npm run dev
+   npx prisma db push
    ```
 
-6. (Facoltativo) Apri Prisma Studio per gestire il database:
+6. Popola il database con i dati iniziali:
+
+   ```bash
+   npx prisma db seed
+   ```
+
+7. Avvia l'app in modalità di sviluppo:
+
+   ```bash
+   pnpm run dev
+   ```
+
+8. (Facoltativo) Apri Prisma Studio per gestire il database:
 
    ```bash
    npx prisma studio
