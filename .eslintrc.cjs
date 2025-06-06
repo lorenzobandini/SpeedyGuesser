@@ -1,20 +1,18 @@
 /** @type {import("eslint").Linter.Config} */
 const config = {
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
     "project": "./tsconfig.json", // Assicurati che il percorso sia corretto
     "tsconfigRootDir": __dirname,
-    "sourceType": "module"
-  },
-  "plugins": [
+    "sourceType": "module"  },  plugins: [
+    // @ts-ignore
     "@typescript-eslint"
-  ],
-  "extends": [
+  ],extends: [
     "next/core-web-vitals",
     "plugin:@typescript-eslint/recommended-type-checked",
     "plugin:@typescript-eslint/stylistic-type-checked"
   ],
-  "rules": {
+  rules: {
     "@typescript-eslint/array-type": "off",
     "@typescript-eslint/consistent-type-definitions": "off",
     "@typescript-eslint/consistent-type-imports": [
