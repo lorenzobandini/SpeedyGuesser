@@ -34,7 +34,7 @@ export default function InfoPage() {
             </p>
           </div>
         </ScrollArea>
-        <div className="grid flex-grow grid-cols-1 gap-6">
+        <div className="grid grow grid-cols-1 gap-6">
           <div>
             <h3 className="text-lg font-semibold">Sviluppatore</h3>
             <p className="text-gray-600">Lorenzo Bandini</p>

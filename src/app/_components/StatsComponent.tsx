@@ -15,7 +15,7 @@ export default function StatsComponent({
 
   return (
     <div className="flex h-full flex-col bg-main p-4">
-      <div className="flex flex-grow flex-col items-center justify-center">
+      <div className="flex grow flex-col items-center justify-center">
         <div className="container flex flex-col items-center justify-center gap-6 py-8">
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl text-center">
             Punti totalizzati: <span className="text-dark">{stats.score}</span>

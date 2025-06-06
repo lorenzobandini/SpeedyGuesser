@@ -22,7 +22,7 @@ export default function SelectionForm({ onStart, buttonText }: SelectionFormProp
   const [passes, setPasses] = useState('3')
 
   return (
-    <div className="flex flex-grow flex-col items-center justify-center px-4">
+    <div className="flex grow flex-col items-center justify-center px-4">
       <span className="text-white m-6 font-bold text-3xl sm:text-4xl lg:text-5xl">
         Speedy
         <span className="text-dark">Guesser</span>

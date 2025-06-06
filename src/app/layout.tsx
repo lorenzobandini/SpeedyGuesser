@@ -32,7 +32,7 @@ export default function RootLayout({
       >
         <TRPCReactProvider>
           <Navbar />
-          <main className="flex-grow flex flex-col overflow-hidden">
+          <main className="grow flex flex-col overflow-hidden">
             {children}
           </main>
           <Footer />

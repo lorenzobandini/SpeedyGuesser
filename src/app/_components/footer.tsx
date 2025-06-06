@@ -23,7 +23,7 @@ export default function Footer() {
   return (
     <footer className="flex w/full items-center justify-between p-3">
       {showExitButton ? <ExitGameButton /> : pathname !== '/' && <BackButton />}
-      <div className="flex-grow" />
+      <div className="grow" />
       <SettingsButton />
     </footer>
   )
