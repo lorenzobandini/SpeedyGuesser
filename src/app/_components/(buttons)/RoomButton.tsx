@@ -1,30 +1,36 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from "~/components/ui/dialog";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import { Button } from '~/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogHeader,
+} from '~/components/ui/dialog';
+import { useRouter } from 'next/navigation';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "~/components/ui/input-otp";
-import { REGEXP_ONLY_DIGITS } from "input-otp";
-import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import { api } from "~/trpc/react";
+} from '~/components/ui/input-otp';
+import { REGEXP_ONLY_DIGITS } from 'input-otp';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
+import { api } from '~/trpc/react';
 
 interface RoomButtonProps {
-  mode: "local" | "online";
+  mode: 'local' | 'online';
 }
 
 export default function RoomButton({ mode }: RoomButtonProps) {
   const [open, setOpen] = useState(false);
   const [join, setJoin] = useState(false);
-  const [roomNumber, setRoomNumber] = useState("");
+  const [roomNumber, setRoomNumber] = useState('');
   const router = useRouter();
   const getRoomIdByCode = api.room.getRoomIdByCode.useQuery(
     { code: parseInt(roomNumber) },
-    { enabled: false }
+    { enabled: false },
   );
 
   const handleCreateRoom = () => {
@@ -44,10 +50,10 @@ export default function RoomButton({ mode }: RoomButtonProps) {
         router.push(`/game/${mode}/room/${roomId}`);
         setOpen(false);
       }
-    }catch (error) {
+    } catch (error) {
       console.error(error);
     }
-  }
+  };
 
   return (
     <>
@@ -56,10 +62,10 @@ export default function RoomButton({ mode }: RoomButtonProps) {
       </Button>
       <Dialog
         open={open}
-        onOpenChange={(isOpen) => {
+        onOpenChange={isOpen => {
           if (!isOpen) {
             setJoin(false);
-            setRoomNumber("");
+            setRoomNumber('');
           }
           setOpen(isOpen);
         }}

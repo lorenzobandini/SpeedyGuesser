@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import SelectionForm from "~/app/_components/SelectionForm";
+import { useRouter } from 'next/navigation';
+import SelectionForm from '~/app/_components/SelectionForm';
 
 export default function OfflineMode() {
   const router = useRouter();

@@ -1,9 +1,9 @@
-import { ScrollArea } from "~/components/ui/scroll-area";
+import { ScrollArea } from '~/components/ui/scroll-area';
 
 export default function InfoPage() {
   return (
-    <div className="flex flex-col items-center justify-center text-dark">
-      <div className="flex w-full max-w-md flex-col rounded-lg bg-light p-8 shadow-lg">
+    <div className="text-dark flex flex-col items-center justify-center">
+      <div className="bg-light flex w-full max-w-md flex-col rounded-lg p-8 shadow-lg">
         <h1 className="mb-4 text-center text-2xl font-bold">Informazioni</h1>
         <ScrollArea className="mb-6 max-h-64 w-full overflow-auto rounded-md border p-4">
           <div className="space-y-4">

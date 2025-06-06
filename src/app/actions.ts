@@ -43,11 +43,14 @@ export async function sendNotification(message: string) {
     return { success: false, error: 'No subscription available' };
   }
   try {
-    await webpush.sendNotification(subscription, JSON.stringify({
-      title: 'SpeedyGuesser',
-      body: message,
-      icon: '/SpeedyGuesserLogo-LittleRounded.png',
-    }));
+    await webpush.sendNotification(
+      subscription,
+      JSON.stringify({
+        title: 'SpeedyGuesser',
+        body: message,
+        icon: '/SpeedyGuesserLogo-LittleRounded.png',
+      }),
+    );
     return { success: true };
   } catch (error) {
     return { success: false, error: 'Failed to send notification' };

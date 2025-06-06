@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import ProfileContent from "../(dialogPages)/profilePage";
-import { Button } from "~/components/ui/button";
-import Image from "next/image";
+import { useState } from 'react';
+import ProfileContent from '../(dialogPages)/profilePage';
+import { Button } from '~/components/ui/button';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -11,9 +11,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "~/components/ui/dialog";
-import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import type { Session } from "next-auth";
+} from '~/components/ui/dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
+import type { Session } from 'next-auth';
 
 export default function ProfilePage({ session }: { session: Session | null }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,7 +25,7 @@ export default function ProfilePage({ session }: { session: Session | null }) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant={"personal"} className="group flex items-center py-2">
+        <Button variant={'personal'} className="group flex items-center py-2">
           <div className="relative mr-2 flex h-12 items-center justify-center">
             {userImage && (
               <Image
@@ -41,8 +41,8 @@ export default function ProfilePage({ session }: { session: Session | null }) {
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <div className="flex flex-col items-center justify-center  text-dark">
-          <div className="w-full max-w-md rounded-lg bg-light p-8 shadow-lg">
+        <div className="text-dark flex flex-col items-center justify-center">
+          <div className="bg-light w-full max-w-md rounded-lg p-8 shadow-lg">
             <div className="flex items-center justify-center">
               {userImage && (
                 <Image

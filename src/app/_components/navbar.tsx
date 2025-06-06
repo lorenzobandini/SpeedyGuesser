@@ -1,8 +1,8 @@
-import InfoButton from "./(buttons)/infoButton";
-import LogButton from "./(buttons)/logButton";
-import ProfileButton from "./profileContext";
-import GuestProfileButton from "./(buttons)/guestProfileButton";
-import { getServerAuthSession } from "~/server/auth";
+import InfoButton from './(buttons)/infoButton';
+import LogButton from './(buttons)/logButton';
+import ProfileButton from './profileContext';
+import GuestProfileButton from './(buttons)/guestProfileButton';
+import { getServerAuthSession } from '~/server/auth';
 
 export default async function Navbar() {
   const session = await getServerAuthSession();

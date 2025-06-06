@@ -1,6 +1,10 @@
-import { z } from "zod";
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc";
-import { db } from "~/server/db";
+import { z } from 'zod';
+import {
+  createTRPCRouter,
+  publicProcedure,
+  protectedProcedure,
+} from '~/server/api/trpc';
+import { db } from '~/server/db';
 
 export const gameRouter = createTRPCRouter({
   getRandomWords: publicProcedure
@@ -18,7 +22,7 @@ export const gameRouter = createTRPCRouter({
       });
 
       if (totalCount === 0) {
-        throw new Error("Nessuna parola trovata per la lingua selezionata");
+        throw new Error('Nessuna parola trovata per la lingua selezionata');
       }
 
       const wordsSet = new Set<string>();
@@ -65,7 +69,7 @@ export const gameRouter = createTRPCRouter({
           language,
           timeLimit,
           pass,
-          gameType: "SINGLE_DEVICE",
+          gameType: 'SINGLE_DEVICE',
         },
       });
 
@@ -87,7 +91,7 @@ export const gameRouter = createTRPCRouter({
       });
 
       if (!game || game.userId !== userId) {
-        throw new Error("Gioco non trovato o accesso negato");
+        throw new Error('Gioco non trovato o accesso negato');
       }
 
       return game;
@@ -117,7 +121,7 @@ export const gameRouter = createTRPCRouter({
       });
 
       if (!game || game.userId !== userId) {
-        throw new Error("Gioco non trovato o accesso negato");
+        throw new Error('Gioco non trovato o accesso negato');
       }
 
       await db.game.update({
@@ -127,7 +131,7 @@ export const gameRouter = createTRPCRouter({
           passUsed,
           mistakes,
           endedAt: new Date(),
-          status: "COMPLETED",
+          status: 'COMPLETED',
         },
       });
 
@@ -168,53 +172,51 @@ export const gameRouter = createTRPCRouter({
       });
 
       if (!game || game.userId !== userId) {
-        throw new Error("Gioco non trovato o accesso negato");
+        throw new Error('Gioco non trovato o accesso negato');
       }
 
       const gameWords = await db.gameWord.findMany({
         where: { id: gameId },
         include: { word: true },
-        orderBy: { order: "asc" },
+        orderBy: { order: 'asc' },
       });
 
-      return gameWords.map((gw) => ({
+      return gameWords.map(gw => ({
         word: gw.word.word,
         outcome: gw.status,
       }));
     }),
 
-  getUserStatistics: protectedProcedure
-    .query(async ({ ctx }) => {
-      const userId = ctx.session.user.id;
+  getUserStatistics: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
 
-      const gamesPlayed = await db.game.count({
-        where: { userId },
-      });
+    const gamesPlayed = await db.game.count({
+      where: { userId },
+    });
 
-      const highestScoreGame = await db.game.findFirst({
-        where: { userId },
-        orderBy: { score: 'desc' },
-        select: { score: true },
-      });
+    const highestScoreGame = await db.game.findFirst({
+      where: { userId },
+      orderBy: { score: 'desc' },
+      select: { score: true },
+    });
 
-      return {
-        gamesPlayed,
-        highestScore: highestScoreGame?.score ?? 0,
-      };
-    }),
+    return {
+      gamesPlayed,
+      highestScore: highestScoreGame?.score ?? 0,
+    };
+  }),
 
-  getUserLastGames: protectedProcedure
-    .query(async ({ ctx }) => {
-      const userId = ctx.session.user.id;
+  getUserLastGames: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
 
-      const lastGames = await db.game.findMany({
-        where: { userId },
-        orderBy: { endedAt: 'desc' },
-        take: 20,
-      });
+    const lastGames = await db.game.findMany({
+      where: { userId },
+      orderBy: { endedAt: 'desc' },
+      take: 20,
+    });
 
-      return lastGames;
-    }),
+    return lastGames;
+  }),
 
   createGameState: publicProcedure
     .input(
@@ -237,7 +239,7 @@ export const gameRouter = createTRPCRouter({
         where: { id: gameId },
       });
 
-      if(!game) {
+      if (!game) {
         return null;
       }
 
@@ -249,7 +251,7 @@ export const gameRouter = createTRPCRouter({
       });
 
       if (totalCount === 0) {
-        throw new Error("Nessuna parola trovata per la lingua selezionata");
+        throw new Error('Nessuna parola trovata per la lingua selezionata');
       }
 
       const gameState = await db.gameState.create({
@@ -270,20 +272,20 @@ export const gameRouter = createTRPCRouter({
         take: count,
       });
 
-        if (words.length < count) {
+      if (words.length < count) {
         throw new Error(`Impossibile trovare ${count} parole uniche`);
-        }
+      }
 
-        const gameWords = words.map((word, index) => ({
+      const gameWords = words.map((word, index) => ({
         gameId,
         wordId: word.id,
         status: 'PENDING',
         order: index,
-        }));
+      }));
 
-        await db.gameWord.createMany({
+      await db.gameWord.createMany({
         data: gameWords,
-        });
+      });
 
       return gameState;
     }),

@@ -179,10 +179,14 @@
   body {
     @apply bg-background text-foreground;
   }
-  button, a, [role="button"], [tabindex="0"] {
+  button,
+  a,
+  [role='button'],
+  [tabindex='0'] {
     cursor: pointer;
   }
-  button:disabled, [disabled] {
+  button:disabled,
+  [disabled] {
     cursor: not-allowed;
   }
 }

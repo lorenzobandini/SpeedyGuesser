@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
-import { useRouter } from "next/navigation";
-import { api } from "~/trpc/react";
-import { ScrollArea } from "~/components/ui/scroll-area";
-import { Button } from "~/components/ui/button";
+import { useRouter } from 'next/navigation';
+import { api } from '~/trpc/react';
+import { ScrollArea } from '~/components/ui/scroll-area';
+import { Button } from '~/components/ui/button';
 
 interface ProfileContentProps {
   closeDialog: () => void;
@@ -31,8 +31,11 @@ export default function ProfileContent({ closeDialog }: ProfileContentProps) {
       <h3 className="mt-6 text-lg font-semibold">Cronologia Partite</h3>
       <ScrollArea className="mt-4 h-64">
         <ul>
-          {lastGames?.map((game) => (
-            <li key={game.id} className="mb-4 flex justify-between items-center">
+          {lastGames?.map(game => (
+            <li
+              key={game.id}
+              className="mb-4 flex items-center justify-between"
+            >
               <div>
                 <p className="text-dark">
                   {game.language} - {game.timeLimit}s - Pass: {game.pass}
@@ -41,10 +44,12 @@ export default function ProfileContent({ closeDialog }: ProfileContentProps) {
                   Punteggio: {game.score} - Errori: {game.mistakes}
                 </p>
               </div>
-              <Button onClick={() => { 
-                closeDialog();
-                router.push(`/stats/${game.id}`); 
-              }}>
+              <Button
+                onClick={() => {
+                  closeDialog();
+                  router.push(`/stats/${game.id}`);
+                }}
+              >
                 Dettagli
               </Button>
             </li>

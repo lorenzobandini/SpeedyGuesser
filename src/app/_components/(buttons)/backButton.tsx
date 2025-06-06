@@ -1,8 +1,8 @@
-"use client"
+'use client';
 
-import { IoArrowBackOutline } from "react-icons/io5";
-import { Button } from "~/components/ui/button";
-import { useRouter } from "next/navigation";
+import { IoArrowBackOutline } from 'react-icons/io5';
+import { Button } from '~/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 export default function BackButton() {
   const router = useRouter();
@@ -12,7 +12,7 @@ export default function BackButton() {
   };
 
   return (
-    <Button variant={"personalIcon"} size={"icon"} onClick={handleBackClick}>
+    <Button variant={'personalIcon'} size={'icon'} onClick={handleBackClick}>
       <IoArrowBackOutline size={32} />
     </Button>
   );

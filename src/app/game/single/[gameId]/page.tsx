@@ -1,7 +1,7 @@
-import { getServerAuthSession } from "~/server/auth";
-import GameClient from "./GameClient";
-import { db } from "~/server/db";
-import { redirect } from "next/navigation";
+import { getServerAuthSession } from '~/server/auth';
+import GameClient from './GameClient';
+import { db } from '~/server/db';
+import { redirect } from 'next/navigation';
 
 export default async function GamePage({
   params,
@@ -10,7 +10,7 @@ export default async function GamePage({
 }) {
   const session = await getServerAuthSession();
   if (!session) {
-    redirect("/auth/signin");
+    redirect('/auth/signin');
   }
 
   const gameId = params.gameId;
@@ -20,7 +20,7 @@ export default async function GamePage({
   });
 
   if (!game || game.userId !== session.user.id) {
-    redirect("/");
+    redirect('/');
   }
 
   return (

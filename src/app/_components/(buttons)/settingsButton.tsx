@@ -1,11 +1,22 @@
-'use client'
+'use client';
 
-import { Button } from "~/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
-import { IoMdSettings, IoMdNotifications, IoMdAddCircle, IoMdNotificationsOff } from "react-icons/io"; // Aggiungi nuove icone
+import { Button } from '~/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from '~/components/ui/dialog';
+import {
+  IoMdSettings,
+  IoMdNotifications,
+  IoMdAddCircle,
+  IoMdNotificationsOff,
+} from 'react-icons/io'; // Aggiungi nuove icone
 import { useState, useEffect } from 'react';
 import { subscribeUser, sendNotification } from '~/app/actions';
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -20,7 +31,9 @@ function urlBase64ToUint8Array(base64String: string) {
 
 function PushNotificationManager() {
   const [isSupported, setIsSupported] = useState(false);
-  const [subscription, setSubscription] = useState<PushSubscription | null>(null);
+  const [subscription, setSubscription] = useState<PushSubscription | null>(
+    null,
+  );
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -44,7 +57,7 @@ function PushNotificationManager() {
     const sub = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(
-        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
       ),
     });
     const keys = sub.toJSON().keys;
@@ -92,18 +105,26 @@ function PushNotificationManager() {
             <IoMdNotifications size={24} />
             <p>Sei iscritto alle notifiche push.</p>
           </div>
-          <Button variant="personalDestructive" onClick={unsubscribeFromPush} aria-label="Disiscriviti">
+          <Button
+            variant="personalDestructive"
+            onClick={unsubscribeFromPush}
+            aria-label="Disiscriviti"
+          >
             <IoMdNotificationsOff size={20} />
           </Button>
-          <div className="flex flex-col space-y-2 mt-4">
+          <div className="mt-4 flex flex-col space-y-2">
             <input
               type="text"
               placeholder="Inserisci il messaggio"
-              className="text-dark border px-2 py-1 rounded-full"
+              className="text-dark rounded-full border px-2 py-1"
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={e => setMessage(e.target.value)}
             />
-            <Button variant="personalIcon" onClick={sendTestNotification} aria-label="Invia notifica">
+            <Button
+              variant="personalIcon"
+              onClick={sendTestNotification}
+              aria-label="Invia notifica"
+            >
               <IoMdAddCircle size={20} />
             </Button>
           </div>
@@ -111,7 +132,11 @@ function PushNotificationManager() {
       ) : (
         <>
           <p>Non sei iscritto alle notifiche push.</p>
-          <Button variant="personalIcon" onClick={subscribeToPush} aria-label="Iscriviti">
+          <Button
+            variant="personalIcon"
+            onClick={subscribeToPush}
+            aria-label="Iscriviti"
+          >
             <IoMdNotifications size={20} />
           </Button>
         </>
@@ -126,13 +151,13 @@ function InstallPrompt() {
 
   useEffect(() => {
     setIsIOS(
-      /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window)
+      /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window),
     );
     setIsStandalone(window.matchMedia('(display-mode: standalone)').matches);
   }, []);
 
   if (isStandalone) {
-    return null; 
+    return null;
   }
 
   return (
@@ -165,7 +190,7 @@ export default function SettingsButton() {
         <DialogDescription>Descrizione</DialogDescription>
       </VisuallyHidden>
       <DialogTrigger asChild>
-        <Button variant={"personalIcon"} size={"icon"}>
+        <Button variant={'personalIcon'} size={'icon'}>
           <IoMdSettings size={32} />
         </Button>
       </DialogTrigger>

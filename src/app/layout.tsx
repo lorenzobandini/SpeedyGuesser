@@ -1,20 +1,20 @@
-import "~/styles/globals.css";
-import { Jost as FontSans } from "next/font/google";
-import { TRPCReactProvider } from "~/trpc/react";
-import { cn } from "~/lib/utils";
-import Navbar from "~/app/_components/navbar";
-import Footer from "~/app/_components/footer";
+import '~/styles/globals.css';
+import { Jost as FontSans } from 'next/font/google';
+import { TRPCReactProvider } from '~/trpc/react';
+import { cn } from '~/lib/utils';
+import Navbar from '~/app/_components/navbar';
+import Footer from '~/app/_components/footer';
 
 const fontSans = FontSans({
-  subsets: ["latin"],
-  variable: "--font-sans",
+  subsets: ['latin'],
+  variable: '--font-sans',
 });
 
 export const metadata = {
-  title: "SpeedyGuesser",
+  title: 'SpeedyGuesser',
   description:
-    "Game to be played by three people where two people have to make the third person guess as many words as possible by saying one word each",
-  icons: [{ rel: "icon", url: "/SpeedyGuesserLogo-LittleRounded.ico" }],
+    'Game to be played by three people where two people have to make the third person guess as many words as possible by saying one word each',
+  icons: [{ rel: 'icon', url: '/SpeedyGuesserLogo-LittleRounded.ico' }],
 };
 
 export default function RootLayout({
@@ -26,15 +26,13 @@ export default function RootLayout({
     <html lang="en" className={`${fontSans.variable} h-full`}>
       <body
         className={cn(
-          "flex flex-col h-full max-h-screen overflow-hidden bg-main font-sans antialiased text-light",
+          'bg-main text-light flex h-full max-h-screen flex-col overflow-hidden font-sans antialiased',
           fontSans.variable,
         )}
       >
         <TRPCReactProvider>
           <Navbar />
-          <main className="grow flex flex-col overflow-hidden">
-            {children}
-          </main>
+          <main className="flex grow flex-col overflow-hidden">{children}</main>
           <Footer />
         </TRPCReactProvider>
       </body>

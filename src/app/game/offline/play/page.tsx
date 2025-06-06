@@ -1,38 +1,38 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "~/components/ui/button";
-import { FaMinus, FaPlus, FaPlay, FaPause } from "react-icons/fa";
-import { RiSkipForwardFill } from "react-icons/ri";
-import { api } from "~/trpc/react";
-import { useToast } from "~/hooks/use-toast";
-import { Toaster } from "~/components/ui/toaster";
-import StatsComponent from "../../../_components/StatsComponent";
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Button } from '~/components/ui/button';
+import { FaMinus, FaPlus, FaPlay, FaPause } from 'react-icons/fa';
+import { RiSkipForwardFill } from 'react-icons/ri';
+import { api } from '~/trpc/react';
+import { useToast } from '~/hooks/use-toast';
+import { Toaster } from '~/components/ui/toaster';
+import StatsComponent from '../../../_components/StatsComponent';
 
-const validLanguages = ["IT", "EN"];
-const validTimes = ["45", "60", "90"];
-const validPasses = ["0", "1", "3", "5"];
+const validLanguages = ['IT', 'EN'];
+const validTimes = ['45', '60', '90'];
+const validPasses = ['0', '1', '3', '5'];
 
 export default function Game() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  let language = searchParams?.get("language") ?? "IT";
-  const time = searchParams?.get("time") ?? "60";
-  const passes = searchParams?.get("passes") ?? "3";
+  let language = searchParams?.get('language') ?? 'IT';
+  const time = searchParams?.get('time') ?? '60';
+  const passes = searchParams?.get('passes') ?? '3';
 
-  if (!validLanguages.includes(language)) language = "IT";
+  if (!validLanguages.includes(language)) language = 'IT';
 
   useEffect(() => {
     if (
       !validTimes.includes(time) ||
       !validPasses.includes(passes) ||
-      !searchParams?.has("time") ||
-      !searchParams?.has("passes") ||
-      !searchParams?.has("language")
+      !searchParams?.has('time') ||
+      !searchParams?.has('passes') ||
+      !searchParams?.has('language')
     ) {
-      router.replace("/game/offline/play?language=IT&time=60&passes=3");
+      router.replace('/game/offline/play?language=IT&time=60&passes=3');
       setRemainingTime(60);
       setRemainingPasses(3);
     }
@@ -74,15 +74,15 @@ export default function Game() {
         setHasChosen(true);
         setIsProcessing(false);
         toast({
-          title: "Correct!",
+          title: 'Correct!',
           description: "You've earned a point.",
-          variant: "success",
+          variant: 'success',
         });
         setWordsData([
           ...wordsData,
           {
-            word: someWords.data?.[currentWordIndex] ?? "",
-            outcome: "indovinata",
+            word: someWords.data?.[currentWordIndex] ?? '',
+            outcome: 'indovinata',
           },
         ]);
       }, 500);
@@ -97,15 +97,15 @@ export default function Game() {
         setHasChosen(true);
         setIsProcessing(false);
         toast({
-          title: "Incorrect",
+          title: 'Incorrect',
           description: "You've lost a point.",
-          variant: "destructive",
+          variant: 'destructive',
         });
         setWordsData([
           ...wordsData,
           {
-            word: someWords.data?.[currentWordIndex] ?? "",
-            outcome: "sbagliata",
+            word: someWords.data?.[currentWordIndex] ?? '',
+            outcome: 'sbagliata',
           },
         ]);
       }, 500);
@@ -120,15 +120,15 @@ export default function Game() {
         setHasChosen(true);
         setIsProcessing(false);
         toast({
-          title: "Passed",
+          title: 'Passed',
           description: "You've used a pass.",
-          variant: "info",
+          variant: 'info',
         });
         setWordsData([
           ...wordsData,
           {
-            word: someWords.data?.[currentWordIndex] ?? "",
-            outcome: "passata",
+            word: someWords.data?.[currentWordIndex] ?? '',
+            outcome: 'passata',
           },
         ]);
       }, 500);
@@ -148,9 +148,9 @@ export default function Game() {
     if (isPaused) {
       if (wordRevealed && !hasChosen) {
         toast({
-          title: "Action Required",
-          description: "You must choose an option before continuing!",
-          variant: "warning",
+          title: 'Action Required',
+          description: 'You must choose an option before continuing!',
+          variant: 'warning',
         });
         return;
       }
@@ -176,7 +176,7 @@ export default function Game() {
   };
 
   const onHome = () => {
-    router.push("/");
+    router.push('/');
   };
 
   if (showStats) {
@@ -187,7 +187,7 @@ export default function Game() {
           totalPasses: parseInt(passes),
           usedPasses: parseInt(passes) - remainingPasses,
           totalTime: parseInt(time),
-          mistakes: wordsData.filter((w) => w.outcome === "sbagliata").length,
+          mistakes: wordsData.filter(w => w.outcome === 'sbagliata').length,
           wordsData,
         }}
         onRestart={onRestart}
@@ -197,7 +197,7 @@ export default function Game() {
   }
 
   return (
-    <div className="min-h-screen bg-main p-4 text-dark">
+    <div className="bg-main text-dark min-h-screen p-4">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex items-center justify-between">
           <div className="text-3xl font-bold text-white">
@@ -205,25 +205,25 @@ export default function Game() {
           </div>
           <div className="flex items-center space-x-4">
             <div className="hidden text-2xl font-bold sm:block">Tempo:</div>
-            <div className="flex h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed border-dark bg-second font-mono text-5xl font-bold text-dark">
+            <div className="border-dark bg-second text-dark flex h-20 w-20 items-center justify-center rounded-xl border-2 border-dashed font-mono text-5xl font-bold">
               {remainingTime}
             </div>
           </div>
         </div>
 
         <div className="mb-8 flex items-center justify-center">
-          <div className="flex h-20 w-full max-w-2xl items-center justify-center rounded-xl border-2 border-dashed border-dark bg-third font-mono text-4xl font-bold text-dark">
+          <div className="border-dark bg-third text-dark flex h-20 w-full max-w-2xl items-center justify-center rounded-xl border-2 border-dashed font-mono text-4xl font-bold">
             {wordRevealed
-              ? (someWords.data?.[currentWordIndex] ?? "")
-              : "?????"}
+              ? (someWords.data?.[currentWordIndex] ?? '')
+              : '?????'}
           </div>
         </div>
 
         <div className="mb-8 flex items-center justify-between">
           <div className="flex w-1/4 flex-col items-center">
             <div className="text-2xl font-bold">Punteggio</div>
-            <div className="mt-2 flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-dark bg-second font-mono text-3xl font-bold text-dark">
-              {score.toString().padStart(2, "0")}
+            <div className="border-dark bg-second text-dark mt-2 flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed font-mono text-3xl font-bold">
+              {score.toString().padStart(2, '0')}
             </div>
           </div>
 
@@ -232,15 +232,15 @@ export default function Game() {
               variant="personal"
               size="lg"
               onClick={togglePause}
-              className="flex h-32 w-32 items-center justify-center rounded-full bg-dark text-6xl text-white transition-colors hover:bg-dark/80"
+              className="bg-dark hover:bg-dark/80 flex h-32 w-32 items-center justify-center rounded-full text-6xl text-white transition-colors"
             >
               {isPaused ? <FaPlay /> : <FaPause />}
             </Button>
           </div>
 
           <div className="flex w-1/4 flex-col items-center">
-            <div className="text-2xl font-bold text-dark">Passi</div>
-            <div className="mt-2 flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-dark bg-second font-mono text-3xl font-bold">
+            <div className="text-dark text-2xl font-bold">Passi</div>
+            <div className="border-dark bg-second mt-2 flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed font-mono text-3xl font-bold">
               {remainingPasses}
             </div>
           </div>
@@ -252,7 +252,7 @@ export default function Game() {
             size="lg"
             onClick={handleIncorrect}
             disabled={!isPaused || !wordRevealed || hasChosen || isProcessing}
-            className="flex h-24 w-24 items-center justify-center rounded-full bg-dark text-4xl text-white transition-all hover:bg-dark/80 disabled:cursor-not-allowed disabled:opacity-50"
+            className="bg-dark hover:bg-dark/80 flex h-24 w-24 items-center justify-center rounded-full text-4xl text-white transition-all disabled:cursor-not-allowed disabled:opacity-50"
           >
             <FaMinus />
           </Button>
@@ -267,7 +267,7 @@ export default function Game() {
               hasChosen ||
               isProcessing
             }
-            className="flex h-24 w-24 items-center justify-center rounded-full bg-dark text-4xl text-white transition-all hover:bg-dark/80 disabled:cursor-not-allowed disabled:opacity-50"
+            className="bg-dark hover:bg-dark/80 flex h-24 w-24 items-center justify-center rounded-full text-4xl text-white transition-all disabled:cursor-not-allowed disabled:opacity-50"
           >
             <RiSkipForwardFill />
           </Button>
@@ -276,7 +276,7 @@ export default function Game() {
             size="lg"
             onClick={handleCorrect}
             disabled={!isPaused || !wordRevealed || hasChosen || isProcessing}
-            className="flex h-24 w-24 items-center justify-center rounded-full bg-dark text-4xl text-white transition-all hover:bg-dark/80 disabled:cursor-not-allowed disabled:opacity-50"
+            className="bg-dark hover:bg-dark/80 flex h-24 w-24 items-center justify-center rounded-full text-4xl text-white transition-all disabled:cursor-not-allowed disabled:opacity-50"
           >
             <FaPlus />
           </Button>

@@ -1,10 +1,10 @@
-import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { db } from "~/server/db";
-import { EventEmitter } from "events";
+import { z } from 'zod';
+import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
+import { db } from '~/server/db';
+import { EventEmitter } from 'events';
 import { observable } from '@trpc/server/observable';
-import type { RoomPlayer } from "@prisma/client";
-import type { RoomWithPlayers } from "~/types/game";
+import type { RoomPlayer } from '@prisma/client';
+import type { RoomWithPlayers } from '~/types/game';
 
 const roomEvents = new EventEmitter();
 const roomPlayerEvents = new EventEmitter();
@@ -16,7 +16,7 @@ export const roomRouter = createTRPCRouter({
         language: z.string(),
         timeLimit: z.number().int().positive(),
         pass: z.number().int().nonnegative(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       const { language, timeLimit, pass } = input;
@@ -35,17 +35,17 @@ export const roomRouter = createTRPCRouter({
       } while (existingRoom && attempts < maxAttempts);
 
       if (attempts >= maxAttempts) {
-        throw new Error("Impossibile generare un codice stanza unico");
+        throw new Error('Impossibile generare un codice stanza unico');
       }
 
       const room = await db.room.create({
         data: {
           code,
-          gameType: "LOCAL_MULTIPLAYER",
+          gameType: 'LOCAL_MULTIPLAYER',
           language,
           timeLimit,
           pass,
-          status: "WAITING",
+          status: 'WAITING',
         },
       });
 
@@ -53,7 +53,7 @@ export const roomRouter = createTRPCRouter({
 
       return { roomId: room.id };
     }),
-  
+
   getRoomById: protectedProcedure
     .input(z.object({ roomId: z.string() }))
     .query(async ({ input }) => {
@@ -76,8 +76,8 @@ export const roomRouter = createTRPCRouter({
     .input(
       z.object({
         roomId: z.string(),
-        role: z.enum(["HINTER", "GUESSER"]),
-      })
+        role: z.enum(['HINTER', 'GUESSER']),
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { roomId, role } = input;
@@ -89,7 +89,7 @@ export const roomRouter = createTRPCRouter({
       });
 
       if (room && room.players.length >= 3) {
-        throw new Error("La stanza è già piena.");
+        throw new Error('La stanza è già piena.');
       }
 
       const existingPlayer = await db.roomPlayer.findFirst({
@@ -98,7 +98,6 @@ export const roomRouter = createTRPCRouter({
           userId,
         },
       });
-
 
       if (existingPlayer) {
         await db.roomPlayer.update({
@@ -116,7 +115,7 @@ export const roomRouter = createTRPCRouter({
       }
       await db.room.update({
         where: { id: roomId },
-        data: { status: "READY" },
+        data: { status: 'READY' },
       });
       roomEvents.emit(`roomUpdate:${input.roomId}`);
       roomPlayerEvents.emit(`roomPlayerUpdate:${input.roomId}`);
@@ -140,13 +139,13 @@ export const roomRouter = createTRPCRouter({
       roomPlayerEvents.emit(`roomPlayerUpdate:${input.roomId}`);
       return { success: true };
     }),
-    
+
   updatePlayerRole: protectedProcedure
     .input(
       z.object({
         roomId: z.string(),
-        role: z.enum(["HINTER", "GUESSER"]),
-      })
+        role: z.enum(['HINTER', 'GUESSER']),
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { roomId, role } = input;
@@ -158,8 +157,8 @@ export const roomRouter = createTRPCRouter({
           userId,
         },
       });
-      
-      if(player) {
+
+      if (player) {
         await db.roomPlayer.update({
           where: { id: player.id },
           data: { role },
@@ -176,7 +175,7 @@ export const roomRouter = createTRPCRouter({
     .input(
       z.object({
         code: z.number().int(),
-      })
+      }),
     )
     .query(async ({ input }) => {
       const { code } = input;
@@ -187,7 +186,7 @@ export const roomRouter = createTRPCRouter({
       });
 
       if (!room) {
-        throw new Error("Stanza non trovata");
+        throw new Error('Stanza non trovata');
       }
 
       return { roomId: room.id };
@@ -203,18 +202,22 @@ export const roomRouter = createTRPCRouter({
       });
 
       if (!room) {
-        throw new Error("Room not found");
+        throw new Error('Room not found');
       }
 
       if (room.players.length !== 3) {
-        throw new Error("Sono necessari esattamente 3 giocatori per iniziare la partita");
+        throw new Error(
+          'Sono necessari esattamente 3 giocatori per iniziare la partita',
+        );
       }
 
-      const hinterCount = room.players.filter(p => p.role === "HINTER").length;
-      const guesserCount = room.players.filter(p => p.role === "GUESSER").length;
+      const hinterCount = room.players.filter(p => p.role === 'HINTER').length;
+      const guesserCount = room.players.filter(
+        p => p.role === 'GUESSER',
+      ).length;
 
       if (hinterCount !== 2 || guesserCount !== 1) {
-        throw new Error("La partita richiede 2 Hinter e 1 Guesser");
+        throw new Error('La partita richiede 2 Hinter e 1 Guesser');
       }
 
       const game = await db.game.create({
@@ -223,14 +226,14 @@ export const roomRouter = createTRPCRouter({
           language: room.language,
           timeLimit: room.timeLimit,
           pass: room.pass,
-          gameType: "LOCAL_MULTIPLAYER",
-          status: "ONGOING",
+          gameType: 'LOCAL_MULTIPLAYER',
+          status: 'ONGOING',
         },
       });
 
       return { gameId: game.id };
     }),
-    searchGameFromRoom: protectedProcedure
+  searchGameFromRoom: protectedProcedure
     .input(z.object({ roomId: z.string() }))
     .query(async ({ input }) => {
       const { roomId } = input;
@@ -239,7 +242,7 @@ export const roomRouter = createTRPCRouter({
       });
 
       if (!game) {
-        throw new Error("Room not found");
+        throw new Error('Room not found');
       }
 
       return { gameId: game.id };
@@ -267,7 +270,7 @@ export const roomRouter = createTRPCRouter({
     .subscription(({ input }) => {
       const { roomId } = input;
 
-      return observable<RoomWithPlayers | null>((emit) => {
+      return observable<RoomWithPlayers | null>(emit => {
         const sendUpdate = async () => {
           const room = await db.room.findUnique({
             where: { id: roomId },
@@ -294,14 +297,14 @@ export const roomRouter = createTRPCRouter({
           roomEvents.off(`roomUpdate:${roomId}`, onRoomUpdate);
         };
       });
-  }),
+    }),
 
   onRoomPlayerUpdate: protectedProcedure
     .input(z.object({ roomId: z.string() }))
     .subscription(({ input }) => {
       const { roomId } = input;
 
-      return observable<RoomPlayer[] | null>((emit) => {
+      return observable<RoomPlayer[] | null>(emit => {
         const sendUpdate = async () => {
           const room = await db.room.findUnique({
             where: { id: roomId },
@@ -328,5 +331,5 @@ export const roomRouter = createTRPCRouter({
           roomPlayerEvents.off(`roomPlayerUpdate:${roomId}`, onPlayerUpdate);
         };
       });
-  }),
+    }),
 });
