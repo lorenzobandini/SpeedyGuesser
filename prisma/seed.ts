@@ -1,139 +1,90 @@
 import { PrismaClient } from '@prisma/client';
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const prisma = new PrismaClient();
 
-async function main() {
-  const words = [
-    // English words
-    { word: 'house', language: 'EN', difficulty: 1 },
-    { word: 'river', language: 'EN', difficulty: 1 },
-    { word: 'mountain', language: 'EN', difficulty: 2 },
-    { word: 'whisper', language: 'EN', difficulty: 2 },
-    { word: 'galaxy', language: 'EN', difficulty: 3 },
-    { word: 'bicycle', language: 'EN', difficulty: 1 },
-    { word: 'sunrise', language: 'EN', difficulty: 2 },
-    { word: 'lightning', language: 'EN', difficulty: 2 },
-    { word: 'harmony', language: 'EN', difficulty: 3 },
-    { word: 'compass', language: 'EN', difficulty: 2 },
-    { word: 'diamond', language: 'EN', difficulty: 1 },
-    { word: 'journey', language: 'EN', difficulty: 2 },
-    { word: 'ocean', language: 'EN', difficulty: 1 },
-    { word: 'freedom', language: 'EN', difficulty: 2 },
-    { word: 'quicksand', language: 'EN', difficulty: 3 },
-    { word: 'eclipse', language: 'EN', difficulty: 3 },
-    { word: 'fountain', language: 'EN', difficulty: 2 },
-    { word: 'rocket', language: 'EN', difficulty: 1 },
-    { word: 'synergy', language: 'EN', difficulty: 3 },
-    { word: 'illusion', language: 'EN', difficulty: 3 },
-    { word: 'backpack', language: 'EN', difficulty: 2 },
-    { word: 'justice', language: 'EN', difficulty: 2 },
-    { word: 'orchid', language: 'EN', difficulty: 2 },
-    { word: 'aviation', language: 'EN', difficulty: 3 },
-    { word: 'wisdom', language: 'EN', difficulty: 2 },
-    { word: 'courage', language: 'EN', difficulty: 2 },
-    { word: 'hurricane', language: 'EN', difficulty: 4 },
-    { word: 'prosperity', language: 'EN', difficulty: 3 },
-    { word: 'horizon', language: 'EN', difficulty: 2 },
-    { word: 'astronomy', language: 'EN', difficulty: 4 },
-    { word: 'landscape', language: 'EN', difficulty: 2 },
-    { word: 'obstacle', language: 'EN', difficulty: 3 },
-    { word: 'comet', language: 'EN', difficulty: 3 },
-    { word: 'utopia', language: 'EN', difficulty: 3 },
-    { word: 'valor', language: 'EN', difficulty: 2 },
-    { word: 'evolution', language: 'EN', difficulty: 4 },
-    { word: 'mechanism', language: 'EN', difficulty: 4 },
-    { word: 'infinity', language: 'EN', difficulty: 3 },
-    { word: 'algorithm', language: 'EN', difficulty: 5 },
-    { word: 'paradigm', language: 'EN', difficulty: 5 },
-    { word: 'phenomenon', language: 'EN', difficulty: 5 },
-    { word: 'molecule', language: 'EN', difficulty: 3 },
-    { word: 'tradition', language: 'EN', difficulty: 2 },
-    { word: 'cosmos', language: 'EN', difficulty: 3 },
-    { word: 'language', language: 'EN', difficulty: 1 },
-    { word: 'intensity', language: 'EN', difficulty: 3 },
-    { word: 'oasis', language: 'EN', difficulty: 2 },
-    { word: 'victory', language: 'EN', difficulty: 2 },
-    { word: 'labyrinth', language: 'EN', difficulty: 4 },
-    { word: 'fracture', language: 'EN', difficulty: 4 },
-    { word: 'resilience', language: 'EN', difficulty: 4 },
-    { word: 'symmetry', language: 'EN', difficulty: 3 },
-    { word: 'silence', language: 'EN', difficulty: 1 },
-    { word: 'rainbow', language: 'EN', difficulty: 2 },
-    { word: 'fortress', language: 'EN', difficulty: 3 },
-    { word: 'mirage', language: 'EN', difficulty: 3 },
-    { word: 'tornado', language: 'EN', difficulty: 4 },
-    { word: 'nebula', language: 'EN', difficulty: 3 },
-    { word: 'labour', language: 'EN', difficulty: 2 },
-    { word: 'emerald', language: 'EN', difficulty: 3 },
-    { word: 'gravity', language: 'EN', difficulty: 4 },
-    { word: 'equation', language: 'EN', difficulty: 4 },
-    { word: 'satellite', language: 'EN', difficulty: 4 },
-    { word: 'fission', language: 'EN', difficulty: 5 },
-    { word: 'pinnacle', language: 'EN', difficulty: 3 },
+interface WordData {
+  word: string;
+  difficulty: number;
+}
 
-    // Italian words
-    { word: 'casa', language: 'IT', difficulty: 1 },
-    { word: 'fiume', language: 'IT', difficulty: 1 },
-    { word: 'montagna', language: 'IT', difficulty: 2 },
-    { word: 'sussurro', language: 'IT', difficulty: 2 },
-    { word: 'galassia', language: 'IT', difficulty: 3 },
-    { word: 'bicicletta', language: 'IT', difficulty: 1 },
-    { word: 'alba', language: 'IT', difficulty: 1 },
-    { word: 'fulmine', language: 'IT', difficulty: 2 },
-    { word: 'armonia', language: 'IT', difficulty: 2 },
-    { word: 'bussola', language: 'IT', difficulty: 2 },
-    { word: 'diamante', language: 'IT', difficulty: 1 },
-    { word: 'viaggio', language: 'IT', difficulty: 1 },
-    { word: 'oceano', language: 'IT', difficulty: 1 },
-    { word: 'libertà', language: 'IT', difficulty: 2 },
-    { word: 'eclissi', language: 'IT', difficulty: 3 },
-    { word: 'fontana', language: 'IT', difficulty: 1 },
-    { word: 'razzo', language: 'IT', difficulty: 2 },
-    { word: 'sinergia', language: 'IT', difficulty: 3 },
-    { word: 'illusione', language: 'IT', difficulty: 3 },
-    { word: 'zaino', language: 'IT', difficulty: 1 },
-    { word: 'giustizia', language: 'IT', difficulty: 2 },
-    { word: 'orchidea', language: 'IT', difficulty: 3 },
-    { word: 'avventura', language: 'IT', difficulty: 2 },
-    { word: 'saggezza', language: 'IT', difficulty: 2 },
-    { word: 'coraggio', language: 'IT', difficulty: 1 },
-    { word: 'uragano', language: 'IT', difficulty: 4 },
-    { word: 'prosperità', language: 'IT', difficulty: 3 },
-    { word: 'orizzonte', language: 'IT', difficulty: 2 },
-    { word: 'astronomia', language: 'IT', difficulty: 4 },
-    { word: 'paesaggio', language: 'IT', difficulty: 2 },
-    { word: 'ostacolo', language: 'IT', difficulty: 2 },
-    { word: 'cometa', language: 'IT', difficulty: 3 },
-    { word: 'utopia', language: 'IT', difficulty: 3 },
-    { word: 'valore', language: 'IT', difficulty: 2 },
-    { word: 'evoluzione', language: 'IT', difficulty: 4 },
-    { word: 'meccanismo', language: 'IT', difficulty: 4 },
-    { word: 'infinito', language: 'IT', difficulty: 3 },
-    { word: 'algoritmo', language: 'IT', difficulty: 5 },
-    { word: 'paradigma', language: 'IT', difficulty: 5 },
-    { word: 'fenomeno', language: 'IT', difficulty: 3 },
-    { word: 'cosmo', language: 'IT', difficulty: 2 },
-    { word: 'lingua', language: 'IT', difficulty: 1 },
-    { word: 'intensità', language: 'IT', difficulty: 3 },
-    { word: 'oasi', language: 'IT', difficulty: 2 },
-    { word: 'vittoria', language: 'IT', difficulty: 1 },
-    { word: 'labirinto', language: 'IT', difficulty: 4 },
-    { word: 'scoperta', language: 'IT', difficulty: 3 },
-    { word: 'equilibrio', language: 'IT', difficulty: 3 },
-    { word: 'miraggio', language: 'IT', difficulty: 3 },
-    { word: 'tifone', language: 'IT', difficulty: 4 },
-    { word: 'gravità', language: 'IT', difficulty: 4 },
-    { word: 'satellite', language: 'IT', difficulty: 4 },
-    { word: 'clessidra', language: 'IT', difficulty: 3 },
+interface WordWithLanguage extends WordData {
+  language: string;
+}
+
+function loadWordsFromFile(
+  filename: string,
+  language: string,
+): WordWithLanguage[] {
+  try {
+    const filePath = join(__dirname, 'data', filename);
+    const fileContent = readFileSync(filePath, 'utf-8');
+    const words = JSON.parse(fileContent) as WordData[];
+
+    return words.map(word => ({
+      ...word,
+      language,
+    }));
+  } catch (error) {
+    console.error(`Errore nel caricamento del file ${filename}:`, error);
+    return [];
+  }
+}
+
+async function clearDatabase() {
+  console.log('🗑️  Pulizia database in corso...');
+  await prisma.word.deleteMany();
+  console.log('✅ Database pulito');
+}
+
+async function seedWords() {
+  const languageFiles = [
+    { filename: 'words-en.json', language: 'EN' },
+    { filename: 'words-it.json', language: 'IT' },
   ];
 
-  for (const word of words) {
-    await prisma.word.create({
-      data: word,
-    });
+  let totalWords = 0;
+
+  for (const { filename, language } of languageFiles) {
+    console.log(`📚 Caricamento parole ${language}...`);
+    const words = loadWordsFromFile(filename, language);
+
+    if (words.length > 0) {
+      // Batch insert per migliori performance
+      await prisma.word.createMany({
+        data: words,
+      });
+
+      console.log(`✅ Aggiunte ${words.length} parole in ${language}`);
+      totalWords += words.length;
+    }
   }
 
-  console.log('Database popolato con successo!');
+  return totalWords;
+}
+
+async function main() {
+  console.log('🚀 Inizializzazione database...');
+
+  try {
+    // Opzionale: pulire il database prima del seed
+    await clearDatabase();
+
+    // Seed delle parole
+    const totalWords = await seedWords();
+
+    console.log(
+      `🎉 Database popolato con successo! Totale parole: ${totalWords}`,
+    );
+  } catch (error) {
+    console.error('❌ Errore durante il seed:', error);
+    throw error;
+  }
 }
 
 main()
