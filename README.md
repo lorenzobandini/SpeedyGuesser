@@ -1,5 +1,12 @@
 # **SpeedyGuesser** ⚡
 
+## Todo
+
+- Aggiustare dettagli delle partite nella sezione profilo
+- Modulare la pagina del gioco così da non ripetere gli stessi componenti
+- Capire se serve metodo per indicare se la risposta è giusta/sbagliata
+- Controllare comportamento con device mobile e renderlo responsive (problema header, problema selezione parametri)
+
 > _"Challenge your friends and find out who's the fastest at guessing! A race of intuition and speed."_  
 
 ---
@@ -7,6 +14,7 @@
 ## **Table of Contents** 📚
 
 - [**SpeedyGuesser** ⚡](#speedyguesser-)
+      - [Todo](#todo)
   - [**Table of Contents** 📚](#table-of-contents-)
   - [**Project Description**](#project-description)
   - [**How to Use** 🛠️](#how-to-use-️)

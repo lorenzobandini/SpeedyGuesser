@@ -1,7 +1,7 @@
 import { Button } from '~/components/ui/button';
 import Image from 'next/image';
 
-export default async function ProfileButton() {
+export default function ProfileButton() {
   return (
     <Button variant={'personal'} className="group flex items-center py-2">
       <div className="relative mr-2 flex h-12 items-center justify-center">

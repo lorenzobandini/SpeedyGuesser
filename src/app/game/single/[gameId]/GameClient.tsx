@@ -6,13 +6,10 @@ import { Button } from '~/components/ui/button';
 import { FaMinus, FaPlus, FaPlay, FaPause } from 'react-icons/fa';
 import { RiSkipForwardFill } from 'react-icons/ri';
 import { api } from '~/trpc/react';
-import { useToast } from '~/hooks/use-toast';
-import { Toaster } from '~/components/ui/toaster';
 import type { Game } from '@prisma/client';
 
 export default function GameClient({ game }: { game: Game }) {
   const router = useRouter();
-  const { toast } = useToast();
   const language = game.language;
   const timeLimit = game.timeLimit.toString();
   const passes = game.pass.toString();
@@ -64,13 +61,6 @@ export default function GameClient({ game }: { game: Game }) {
           onSuccess: () => {
             router.push(`/stats/${game.id}`);
           },
-          onError: () => {
-            toast({
-              title: 'Errore',
-              description: 'Errore nel salvataggio dei risultati.',
-              variant: 'destructive',
-            });
-          },
         },
       );
     }
@@ -82,7 +72,6 @@ export default function GameClient({ game }: { game: Game }) {
     remainingPasses,
     router,
     score,
-    toast,
     updateGameResults,
     wordsData,
   ]);
@@ -90,15 +79,10 @@ export default function GameClient({ game }: { game: Game }) {
   const handleCorrect = () => {
     if (isPaused && wordRevealed && !hasChosen) {
       setIsProcessing(true);
+      setHasChosen(true);
       setTimeout(() => {
         setScore(score + 1);
-        setHasChosen(true);
         setIsProcessing(false);
-        toast({
-          title: 'Correct!',
-          description: "You've earned a point.",
-          variant: 'success',
-        });
         setWordsData([
           ...wordsData,
           {
@@ -113,15 +97,10 @@ export default function GameClient({ game }: { game: Game }) {
   const handleIncorrect = () => {
     if (isPaused && wordRevealed && !hasChosen) {
       setIsProcessing(true);
+      setHasChosen(true);
       setTimeout(() => {
         setScore(Math.max(0, score - 1));
-        setHasChosen(true);
         setIsProcessing(false);
-        toast({
-          title: 'Incorrect',
-          description: "You've lost a point.",
-          variant: 'destructive',
-        });
         setWordsData([
           ...wordsData,
           {
@@ -136,15 +115,10 @@ export default function GameClient({ game }: { game: Game }) {
   const handlePass = () => {
     if (isPaused && wordRevealed && remainingPasses > 0 && !hasChosen) {
       setIsProcessing(true);
+      setHasChosen(true);
       setTimeout(() => {
         setRemainingPasses(remainingPasses - 1);
-        setHasChosen(true);
         setIsProcessing(false);
-        toast({
-          title: 'Passed',
-          description: "You've used a pass.",
-          variant: 'info',
-        });
         setWordsData([
           ...wordsData,
           {
@@ -168,11 +142,6 @@ export default function GameClient({ game }: { game: Game }) {
   const togglePause = () => {
     if (isPaused) {
       if (wordRevealed && !hasChosen) {
-        toast({
-          title: 'Action Required',
-          description: 'You must choose an option before continuing!',
-          variant: 'warning',
-        });
         return;
       }
       setWordRevealed(true);
@@ -219,7 +188,8 @@ export default function GameClient({ game }: { game: Game }) {
               variant="personal"
               size="lg"
               onClick={togglePause}
-              className="bg-dark hover:bg-dark/80 flex h-32 w-32 items-center justify-center rounded-full text-6xl text-white transition-colors"
+              disabled={isPaused && wordRevealed && !hasChosen}
+              className="bg-dark hover:bg-dark/80 flex h-32 w-32 items-center justify-center rounded-full text-6xl text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isPaused ? <FaPlay /> : <FaPause />}
             </Button>
@@ -269,7 +239,6 @@ export default function GameClient({ game }: { game: Game }) {
           </Button>
         </div>
       </div>
-      <Toaster />
     </div>
   );
 }

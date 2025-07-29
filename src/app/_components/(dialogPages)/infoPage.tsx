@@ -25,13 +25,6 @@ export default function InfoPage() {
               Simile alla modalità offline, con la differenza che è necessario
               essere autenticati. I risultati vengono salvati.
             </p>
-            <h3 className="text-lg font-medium">Modalità Locale</h3>
-            <p>
-              Accessibile solo agli utenti autenticati. Permette a più giocatori
-              su diversi dispositivi di unirsi alla partita e scegliere il
-              proprio ruolo. Lo stato della partita viene sincronizzato in tempo
-              reale sui vari dispositivi e i risultati vengono salvati.
-            </p>
           </div>
         </ScrollArea>
         <div className="grid grow grid-cols-1 gap-6">

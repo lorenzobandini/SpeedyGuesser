@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Button } from '~/components/ui/button';
 import { getServerAuthSession } from '~/server/auth';
-import RoomButton from '~/app/_components/(buttons)/RoomButton';
 
 export default async function SelectMode() {
   const session = await getServerAuthSession();
@@ -32,26 +31,6 @@ export default async function SelectMode() {
               <Button variant={'personal'} size={'xl'} disabled>
                 Single
               </Button>
-            )}
-            <div className="col-span-2 mt-8 text-center">
-              <h2 className="text-3xl font-bold">Multiplayer</h2>
-            </div>
-            {session ? (
-              <>
-                <RoomButton mode="local" />
-                <Button variant={'personal'} size={'xl'} disabled>
-                  Online
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button variant={'personal'} size={'xl'} disabled>
-                  Local
-                </Button>
-                <Button variant={'personal'} size={'xl'} disabled>
-                  Online
-                </Button>
-              </>
             )}
           </div>
         </div>

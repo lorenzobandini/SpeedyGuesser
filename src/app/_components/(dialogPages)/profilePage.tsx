@@ -1,16 +1,18 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import { api } from '~/trpc/react';
 import { ScrollArea } from '~/components/ui/scroll-area';
-import { Button } from '~/components/ui/button';
+// import { Button } from '~/components/ui/button';
 
 interface ProfileContentProps {
   closeDialog: () => void;
 }
 
-export default function ProfileContent({ closeDialog }: ProfileContentProps) {
-  const router = useRouter();
+export default function ProfileContent({
+  closeDialog: _closeDialog,
+}: ProfileContentProps) {
+  // const router = useRouter();
 
   const { data: stats } = api.game.getUserStatistics.useQuery();
   const { data: lastGames } = api.game.getUserLastGames.useQuery();
@@ -44,6 +46,7 @@ export default function ProfileContent({ closeDialog }: ProfileContentProps) {
                   Punteggio: {game.score} - Errori: {game.mistakes}
                 </p>
               </div>
+              {/* I game non terminati hanno questo pulsante ma non la pagina stats
               <Button
                 onClick={() => {
                   closeDialog();
@@ -52,6 +55,7 @@ export default function ProfileContent({ closeDialog }: ProfileContentProps) {
               >
                 Dettagli
               </Button>
+              */}
             </li>
           ))}
         </ul>

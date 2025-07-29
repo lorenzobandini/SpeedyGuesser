@@ -6,8 +6,6 @@ import { Button } from '~/components/ui/button';
 import { FaMinus, FaPlus, FaPlay, FaPause } from 'react-icons/fa';
 import { RiSkipForwardFill } from 'react-icons/ri';
 import { api } from '~/trpc/react';
-import { useToast } from '~/hooks/use-toast';
-import { Toaster } from '~/components/ui/toaster';
 import StatsComponent from '../../../_components/StatsComponent';
 
 const validLanguages = ['IT', 'EN'];
@@ -17,7 +15,6 @@ const validPasses = ['0', '1', '3', '5'];
 export default function Game() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toast } = useToast();
   let language = searchParams?.get('language') ?? 'IT';
   const time = searchParams?.get('time') ?? '60';
   const passes = searchParams?.get('passes') ?? '3';
@@ -69,15 +66,10 @@ export default function Game() {
   const handleCorrect = () => {
     if (isPaused && wordRevealed && !hasChosen) {
       setIsProcessing(true);
+      setHasChosen(true);
       setTimeout(() => {
         setScore(score + 1);
-        setHasChosen(true);
         setIsProcessing(false);
-        toast({
-          title: 'Correct!',
-          description: "You've earned a point.",
-          variant: 'success',
-        });
         setWordsData([
           ...wordsData,
           {
@@ -92,15 +84,10 @@ export default function Game() {
   const handleIncorrect = () => {
     if (isPaused && wordRevealed && !hasChosen) {
       setIsProcessing(true);
+      setHasChosen(true);
       setTimeout(() => {
         setScore(Math.max(0, score - 1));
-        setHasChosen(true);
         setIsProcessing(false);
-        toast({
-          title: 'Incorrect',
-          description: "You've lost a point.",
-          variant: 'destructive',
-        });
         setWordsData([
           ...wordsData,
           {
@@ -115,15 +102,10 @@ export default function Game() {
   const handlePass = () => {
     if (isPaused && wordRevealed && remainingPasses > 0 && !hasChosen) {
       setIsProcessing(true);
+      setHasChosen(true);
       setTimeout(() => {
         setRemainingPasses(remainingPasses - 1);
-        setHasChosen(true);
         setIsProcessing(false);
-        toast({
-          title: 'Passed',
-          description: "You've used a pass.",
-          variant: 'info',
-        });
         setWordsData([
           ...wordsData,
           {
@@ -147,11 +129,6 @@ export default function Game() {
   const togglePause = () => {
     if (isPaused) {
       if (wordRevealed && !hasChosen) {
-        toast({
-          title: 'Action Required',
-          description: 'You must choose an option before continuing!',
-          variant: 'warning',
-        });
         return;
       }
       setWordRevealed(true);
@@ -232,7 +209,8 @@ export default function Game() {
               variant="personal"
               size="lg"
               onClick={togglePause}
-              className="bg-dark hover:bg-dark/80 flex h-32 w-32 items-center justify-center rounded-full text-6xl text-white transition-colors"
+              disabled={isPaused && wordRevealed && !hasChosen}
+              className="bg-dark hover:bg-dark/80 flex h-32 w-32 items-center justify-center rounded-full text-6xl text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isPaused ? <FaPlay /> : <FaPause />}
             </Button>
@@ -282,7 +260,6 @@ export default function Game() {
           </Button>
         </div>
       </div>
-      <Toaster />
     </div>
   );
 }

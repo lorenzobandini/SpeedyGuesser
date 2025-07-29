@@ -6,14 +6,14 @@ import { redirect } from 'next/navigation';
 export default async function GamePage({
   params,
 }: {
-  params: { gameId: string };
+  params: Promise<{ gameId: string }>;
 }) {
   const session = await getServerAuthSession();
   if (!session) {
     redirect('/auth/signin');
   }
 
-  const gameId = params.gameId;
+  const { gameId } = await params;
 
   const game = await db.game.findUnique({
     where: { id: gameId },
