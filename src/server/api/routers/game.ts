@@ -5,6 +5,7 @@ import {
   protectedProcedure,
 } from '~/server/api/trpc';
 import { db } from '~/server/db';
+import type { Verdict } from '~/lib/game-logic';
 
 export const gameRouter = createTRPCRouter({
   getRandomWords: publicProcedure
@@ -107,7 +108,7 @@ export const gameRouter = createTRPCRouter({
         wordsData: z.array(
           z.object({
             word: z.string(),
-            outcome: z.string(),
+            outcome: z.enum(['CORRECT', 'WRONG', 'PASSED']),
           }),
         ),
       }),
@@ -127,35 +128,40 @@ export const gameRouter = createTRPCRouter({
         throw new Error('Gioco non trovato o accesso negato');
       }
 
-      await db.game.update({
-        where: { id: gameId },
-        data: {
-          score,
-          passUsed,
-          mistakes,
-          endedAt: new Date(),
-          status: 'COMPLETED',
-        },
-      });
-
-      for (let i = 0; i < wordsData.length; i++) {
-        const wordData = wordsData[i];
-        if (!wordData) continue;
-        const word = await db.word.findFirst({
-          where: { word: wordData.word, language: game.language },
+      // Transaction + upsert: idempotent on re-run (no duplicate GameWord rows).
+      await db.$transaction(async tx => {
+        await tx.game.update({
+          where: { id: gameId },
+          data: {
+            score,
+            passUsed,
+            mistakes,
+            endedAt: new Date(),
+            status: 'COMPLETED',
+          },
         });
 
-        if (word) {
-          await db.gameWord.create({
-            data: {
+        for (let i = 0; i < wordsData.length; i++) {
+          const wordData = wordsData[i];
+          if (!wordData) continue;
+          const word = await tx.word.findFirst({
+            where: { word: wordData.word, language: game.language },
+          });
+
+          if (!word) continue;
+
+          await tx.gameWord.upsert({
+            where: { gameId_order: { gameId: game.id, order: i } },
+            create: {
               gameId: game.id,
               wordId: word.id,
               status: wordData.outcome,
               order: i,
             },
+            update: { status: wordData.outcome },
           });
         }
-      }
+      });
 
       return { success: true };
     }),
@@ -179,14 +185,14 @@ export const gameRouter = createTRPCRouter({
       }
 
       const gameWords = await db.gameWord.findMany({
-        where: { id: gameId },
+        where: { gameId },
         include: { word: true },
         orderBy: { order: 'asc' },
       });
 
       return gameWords.map(gw => ({
         word: gw.word.word,
-        outcome: gw.status,
+        status: gw.status as Verdict,
       }));
     }),
 
@@ -220,119 +226,4 @@ export const gameRouter = createTRPCRouter({
 
     return lastGames;
   }),
-
-  createGameState: publicProcedure
-    .input(
-      z.object({
-        gameId: z.string(),
-      }),
-    )
-    .mutation(async ({ input }) => {
-      const { gameId } = input;
-
-      const existingState = await db.gameState.findUnique({
-        where: { id: gameId },
-      });
-
-      if (existingState) {
-        return existingState;
-      }
-
-      const game = await db.game.findUnique({
-        where: { id: gameId },
-      });
-
-      if (!game) {
-        return null;
-      }
-
-      const language = game.language;
-      const count = 10;
-
-      const totalCount = await db.word.count({
-        where: { language },
-      });
-
-      if (totalCount === 0) {
-        throw new Error('Nessuna parola trovata per la lingua selezionata');
-      }
-
-      const gameState = await db.gameState.create({
-        data: {
-          gameId,
-          actualTime: game.timeLimit,
-          actualScore: 0,
-          actualPass: game.pass,
-          actualIndexWord: 0,
-          actualStatus: 'IN_PROGRESS',
-          isTimerRunning: false,
-          wordRevealed: false,
-          hasChosen: false,
-        },
-      });
-      const words = await db.word.findMany({
-        where: { language },
-        take: count,
-      });
-
-      if (words.length < count) {
-        throw new Error(`Impossibile trovare ${count} parole uniche`);
-      }
-
-      const gameWords = words.map((word, index) => ({
-        gameId,
-        wordId: word.id,
-        status: 'PENDING',
-        order: index,
-      }));
-
-      await db.gameWord.createMany({
-        data: gameWords,
-      });
-
-      return gameState;
-    }),
-
-  getGameState: publicProcedure
-    .input(
-      z.object({
-        gameId: z.string(),
-      }),
-    )
-    .query(async ({ input }) => {
-      const { gameId } = input;
-
-      const gameState = await db.gameState.findUnique({
-        where: { id: gameId },
-      });
-
-      if (!gameState) {
-        return null;
-      }
-
-      return gameState;
-    }),
-
-  updateGameState: publicProcedure
-    .input(
-      z.object({
-        gameId: z.string(),
-        actualTime: z.number().int().optional(),
-        actualScore: z.number().int().optional(),
-        actualPass: z.number().int().optional(),
-        actualIndexWord: z.number().int().optional(),
-        actualStatus: z.string().optional(),
-        isTimerRunning: z.boolean().optional(),
-      }),
-    )
-    .mutation(async ({ input }) => {
-      const { gameId, ...data } = input;
-
-      const gameState = await db.gameState.update({
-        where: { id: gameId },
-        data,
-      });
-
-      return gameState;
-    }),
 });

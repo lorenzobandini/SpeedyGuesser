@@ -15,7 +15,7 @@ export default function StatsClient({ game }: { game: Game }) {
   const gameWords =
     gameWordsData?.map(wordData => ({
       word: wordData.word,
-      outcome: wordData.outcome,
+      status: wordData.status,
     })) ?? [];
 
   const stats = {

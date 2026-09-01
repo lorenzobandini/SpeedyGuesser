@@ -21,6 +21,7 @@
     "dev": "next dev --turbopack",
     "postinstall": "prisma generate",
     "lint": "next lint",
+    "test": "vitest run",
     "start": "next start",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -78,7 +79,8 @@
     "tailwindcss": "^4.1.8",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.4",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
   },
   "ct3aMetadata": {
     "initVersion": "7.34.0"

@@ -1,3 +1,5 @@
+import type { WordResult } from '~/lib/game-logic';
+
 export interface StatsComponentProps {
   stats: {
     score: number;
@@ -5,7 +7,7 @@ export interface StatsComponentProps {
     totalPasses: number;
     usedPasses: number;
     mistakes: number;
-    wordsData: { word: string; outcome: string }[];
+    wordsData: WordResult[];
   };
   onRestart: () => void;
   onHome: () => void;

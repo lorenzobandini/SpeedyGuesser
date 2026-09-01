@@ -54,9 +54,9 @@ export default function StatsComponent({
                       <span className="text-dark font-medium">
                         {wordData.word}
                       </span>
-                      {wordData.outcome === 'indovinata' ? (
+                      {wordData.status === 'CORRECT' ? (
                         <FaCheck className="text-xl text-green-500" />
-                      ) : wordData.outcome === 'sbagliata' ? (
+                      ) : wordData.status === 'WRONG' ? (
                         <FaTimes className="text-xl text-red-500" />
                       ) : (
                         <MdOutlineSkipNext className="text-xl text-yellow-500" />
