@@ -1,9 +1,9 @@
-import { getServerAuthSession } from '~/server/auth';
+import { auth } from '~/server/auth';
 import { Button } from '~/components/ui/button';
 import Link from 'next/link';
 
 export default async function LogButton() {
-  const session = await getServerAuthSession();
+  const session = await auth();
 
   return (
     <Link

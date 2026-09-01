@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { Button } from '~/components/ui/button';
-import { getServerAuthSession } from '~/server/auth';
+import { auth } from '~/server/auth';
 
 export default async function SelectMode() {
-  const session = await getServerAuthSession();
+  const session = await auth();
 
   return (
     <div className="flex h-full flex-col">

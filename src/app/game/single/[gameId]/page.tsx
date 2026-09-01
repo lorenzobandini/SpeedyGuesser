@@ -1,4 +1,4 @@
-import { getServerAuthSession } from '~/server/auth';
+import { auth } from '~/server/auth';
 import GameClient from './GameClient';
 import { db } from '~/server/db';
 import { redirect } from 'next/navigation';
@@ -8,9 +8,9 @@ export default async function GamePage({
 }: {
   params: Promise<{ gameId: string }>;
 }) {
-  const session = await getServerAuthSession();
+  const session = await auth();
   if (!session) {
-    redirect('/auth/signin');
+    redirect('/api/auth/signin');
   }
 
   const { gameId } = await params;
@@ -19,7 +19,10 @@ export default async function GamePage({
     where: { id: gameId },
   });
 
-  if (game?.userId !== session.user.id) {
+  if (!game) {
+    redirect('/');
+  }
+  if (game.userId !== session.user.id) {
     redirect('/');
   }
 

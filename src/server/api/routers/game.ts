@@ -120,7 +120,10 @@ export const gameRouter = createTRPCRouter({
         where: { id: gameId },
       });
 
-      if (game?.userId !== userId) {
+      if (!game) {
+        throw new Error('Gioco non trovato o accesso negato');
+      }
+      if (game.userId !== userId) {
         throw new Error('Gioco non trovato o accesso negato');
       }
 

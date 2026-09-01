@@ -1,8 +1,8 @@
-import { getServerAuthSession } from '~/server/auth';
+import { auth } from '~/server/auth';
 import SingleModeClient from './SingleModeClient';
 
 export default async function SingleMode() {
-  const session = await getServerAuthSession();
+  const session = await auth();
 
   return (
     <div className="flex h-full flex-col justify-between">
