@@ -1,124 +1,58 @@
-# Piano d'esecuzione — SpeedyGuesser Revival (v1.0)
+# Piano d'esecuzione — SpeedyGuesser Revival (v1.1 — ripresa)
 
-> **Scopo del documento**: piano autonomo e autoconsistente. Chi lo esegue non deve fare supposizioni: contesto, decisioni già prese con l'utente, file esatti, verifiche e criteri di fine lavoro sono tutti qui. Le decisioni sono **già approvate dall'utente** — non vanno riproposte come domande.
+> **Scopo del documento**: piano di ripresa per una nuova chat. Le Fasi 0-2 sono **completate e verificate** (sezione Stato); restano le Fasi 3-7. Il documento è autoconsistente: contesto, decisioni approvate, file esatti, verifiche e criteri di fine lavoro sono tutti qui.
+> Spec di design (fonte di verità architetturale): `docs/superpowers/specs/2026-09-01-speedyguesser-revival-design.md`
 > Data: 2026-09-01 · Repo: `C:\Users\lboa\Desktop\SpeedyGuesser` (branch `cleanup`, working tree pulita)
 
 ---
 
-## 0. Contesto e problema (cosa trovi, perché intervenire)
+## 0. Riepilogo di ciò che è stato fatto (Fasi 0-2, committato)
 
-Progetto T3 App (Next 15, tRPC v11, Prisma 6 + SQLite, next-auth **v4**, Tailwind v4, shadcn) basato sul round "speedy" di *Reazione a Catena*: 2 Hinter danno indizi a voce, 1 Guesser indovina. Esistono solo modalità **offline** e **single**. Il multiplayer fu tentato 2 volte (local + online) con tRPC subscriptions + wsLink e **rimosso interamente** nell'ultimo commit `9b0dad5` perché:
+| Commit | Contenuto |
+|--------|-----------|
+| `5ae906a` | **F0** — Spec design `docs/superpowers/specs/2026-09-01-speedyguesser-revival-design.md` |
+| `5fc1018` | **F0** — Piano d'esecuzione originale (poi sostituito da questo v1.1) |
+| `3a48121` | **F1a** — Dead code: rimosso wsLink/createWSClient da `src/trpc/react.tsx`, `generate-vapid-keys.js`, `public/sw.js`, `profileContext.tsx` (navbar ora passa la session direttamente), `RoomWithPlayers`, regex local/online nel footer, VAPID da `src/env.js`, pacchetti `next-pwa`/`web-push`/types, typo B8. Fix B2 (`params: Promise` in stats page), fix build blocker `await headers()` in `src/trpc/server.ts`, Suspense wrapper per `useSearchParams` in offline/play (−3187 righe) |
+| `d243c46` | **F1b** — Upgrade: next 15.5.25, react/react-dom 19.2.8, @prisma/client+prisma 6.19.3, zod **4.5.4** (compatibile con tRPC 11.18.0, nessun problema riscontrato), @trpc/* 11.18.0, @tanstack/react-query 5.102.8, typescript 5.9.3, @typescript-eslint 8.69.0, eslint-config-next 15.5.25, radix latest, @auth/prisma-adapter 2.11.3, lucide-react, superjson, input-otp, react-icons. Rimosso `tailwindcss-animate` (mai referenziato in `src/`) |
+| `5399fbe` | **F1c** — **next-auth v5 (Auth.js)**: `next-auth@5.0.0-beta.32` (pinnata esatta — v5 ancora in beta). `src/server/auth.ts` rifatto: `NextAuthConfig` + `export const { handlers, auth, signIn, signOut }`, provider Discord/Google con env `AUTH_*`, PrismaAdapter, `trustHost: true`, session callback inietta `user.id`, augmentation `Session.user.id` mantenuta. `route.ts` → `export const { GET, POST } = handlers`. Tutti i `getServerSession` → `await auth()` (trpc context, navbar, logButton, game pages, stats page). Fix **B3** (redirect `/api/auth/signin`). `src/env.js` → `AUTH_SECRET`/`AUTH_DISCORD_ID/SECRET`/`AUTH_GOOGLE_ID/SECRET`. `.env` e `.env.example` aggiornati (NEXTAUTH_*/VAPID eliminate) |
+| `b362609` | **F2** — `src/lib/game-logic.ts` (pura: `applyVerdict`, `advanceWord`, `isRoundOver`, `computeRemaining`, `initRound`, `toResult`; Verdict = `CORRECT|WRONG|PASSED`) + `src/app/_components/game/GameBoard.tsx` (state interno, prop `role: guesser|hinter`, guard `finishedRef` → **B5 chiuso**, named exports `GameTimer`/`WordCard`/`ScoreBar` per la Fase 4) + rifit `offline/play/page.tsx` (~70 r., restart via key remount + refetch) e `GameClient.tsx` (~40 r., `onFinish` → mutation → redirect stats, fuori dal useEffect). Fix **B1** (`where: { gameId }`), **B4** (`$transaction` + upsert su `gameId_order`, input `outcome` ora `z.enum(['CORRECT','WRONG','PASSED'])`). **B6/B7 chiusi**: eliminate le 3 procedure `*GameState`, rimosso modello `GameState` + relation `Game.gameStates`, migration `20260901150556_drop_game_state` applicata, rimossa la migrazione vuota `20250729143651_add_room_expiration`. Vitest setup (`vitest.config.ts`, script `pnpm test`) + 11 test su game-logic |
 
-1. **I route handler di Next.js non gestiscono l'upgrade WebSocket** → le subscription non potevano funzionare senza custom server
-2. Il client tRPC apriva un WebSocket (`wsLink` in `src/trpc/react.tsx`) **in parallelo all'HTTP normale** → è la "connessione sovrapposta" ricordata dall'utente
-3. L'`EventEmitter` in-process non funziona su hosting serverless (istanze multiple senza memoria condivisa)
+**Verifiche passate**: `pnpm lint` ✅ · `pnpm tsc --noEmit` ✅ · `pnpm test` (11/11) ✅ · `pnpm build` ✅ · login Discord funzionante su dev ✅ · smoke offline (gioco + restart) ✅ · smoke single (salvataggio 1× + stats con lista parole = B1/B2 chiusi) ✅
 
-**Bug confermati da analisi** (tutti da fixare, percorsi esatti):
+### Deviazioni dal piano v1.0 (da riportare in spec in Fase 7)
+1. **GameBoard senza prop `allowRestart`**: il restart offline avviene via remount (`key={restartKey}`) + `StatsComponent` renderizzato dal parent — stessa capacità, meno codice.
+2. **`GameWord.status` / outcome migrati a costanti EN** (`CORRECT`/`WRONG`/`PASSED`) ovunque (prima erano stringhe IT libere).
+3. `src/trpc/server.ts`: `headers()` ora è async (`await headers()`) — fix build blocker pre-esistente.
+4. `getRandomWords` mantiene ancora il loop a 1000 tentativi — l'estrazione helper + shuffle è rimandata a Fase 4 come da piano.
 
-| # | Bug | File:riga |
-|---|-----|-----------|
-| B1 | `getGameWords` fa `where: { id: gameId }` invece di `{ gameId }` → lista parole in `/stats` sempre vuota | `src/server/api/routers/game.ts:179` |
-| B2 | `params` sincrono (Next 15 vuole `Promise<{gameId}>`) → pagina stats irraggiungibile | `src/app/stats/[gameId]/page.tsx:9` |
-| B3 | Redirect a `/auth/signin` **inesistente** | `src/app/game/single/[gameId]/page.tsx:13`, `src/app/stats/[gameId]/page.tsx:13` |
-| B4 | `updateGameResults` senza transazione/upsert → doppioni a re-run | `src/server/api/routers/game.ts:100-158` |
-| B5 | Mutation dentro `useEffect` senza guard → rischio doppio salvataggio fine partita | `src/app/game/single/[gameId]/GameClient.tsx:67-77` |
-| B6 | 3 procedure `*GameState` **pubbliche senza auth**: chiunque scrive lo stato di qualsiasi partita (dead code, ma esposto) | `src/server/api/routers/game.ts:221-334` |
-| B7 | `findUnique({ where: { id: gameId }})` su GameState (id non è gameId) | `game.ts:230,302` |
-| B8 | Typo cosmetici `text-3x` (home), `w/full` (footer) | `src/app/page.tsx:14`, `src/app/_components/footer.tsx:24` |
-
-**Dead code residuo da rimuovere**: `wsLink`/`createWSClient` in `src/trpc/react.tsx:7,16-18,57-62`; modello `GameState` in `prisma/schema.prisma` (i modelli `Room`/`RoomPlayer` NON si eliminano: si riforgiano in Fase 4); tipo `RoomWithPlayers` in `src/types/game.ts:16-18`; regex `/game/local/*` e `/game/online/*` in `src/app/_components/footer.tsx:14-16`; `next-pwa` + `@types/next-pwa` (mai configurato); `web-push` + `@types/web-push`; `generate-vapid-keys.js`; `public/sw.js` (mai registrato); VAPID obbligatorie in `src/env.js:29-30` (**bloccano il build**); wrapper `src/app/_components/profileContext.tsx` (inutile); migrazione vuota `prisma/migrations/20250729143651_add_room_expiration/`.
-
-**Da CONSERVARE**: `input-otp` (serve per il join-by-code), `src/app/manifest.ts` (PWA installabile voluta dall'utente), tutta la grafica (arancio `#ff7800`, font Jost, varianti `personal*` di `src/components/ui/button.tsx`, `SelectionForm`, `StatsComponent`).
+### Note ambiente (per chi riprende)
+- **Porta 3000**: era occupata dai container Docker `jevibet-app-1`/`jevibet-postgres-1` (stack compose `jevibet`). Sono stati **fermati** e messi con `docker update --restart=no`. Per riattivarli: `docker start jevibet-app-1 jevibet-postgres-1` (e ri-prima `docker update --restart=always` se serve).
+- **Dev server**: `pnpm dev` su `http://localhost:3000` (env PORT non impostato).
+- **Windows + Prisma**: `prisma generate` fallisce con EPERM (DLL lock) se il dev server è attivo → fermare il server (`taskkill /PID <pid> /T /F` via `netstat -ano | findstr :3000`), rigenerare, riavviare.
+- **pnpm `add pkg@major` non aggiorna il lockfile** se il range esistente già soddisfa: pinnare la versione esatta (`pnpm add pkg@x.y.z`).
+- `next lint` deprecato (warning a ogni run) — migrare a ESLint CLI in Fase 7 se si vuole.
+- Variabili `.env` attuali: `DATABASE_URL="file:./db.sqlite"` + `AUTH_*` (Discord/Google). In Fase 3 la DATABASE_URL passerà a Turso.
 
 ---
 
-## 1. Decisioni approvate (NON rinegoziare, sono state già chieste all'utente)
+## 1. Decisioni approvate (NON rinegoziare)
 
 1. **Hosting: Netlify** + **Realtime: SSE + HTTP** (no WebSocket). Server→client via SSE endpoint per stanza; client→server via normali mutation tRPC. Upgrade path: se SSE non basta, sostituire l'hook client con Pusher — il DB e i router non cambiano.
 2. **DB: Turso (libSQL)** anche in dev — un solo DB, free tier sovradimensionato. Prisma `provider = "libsql"` + `@prisma/adapter-libsql`.
 3. **Multiplayer fedele al gioco TV**: link invito + codice 4 cifre come backup; lobby con **scelta ruolo + bottone Pronto** (2 HINTER + 1 GUESSER); **solo gli Hinter vedono la parola**; il Guesser preme ✅/pass/❌; timer sincronizzato via `startedAt` timestamp server (countdown calcolato client-side).
 4. **Stats online valgono a tutti e 3** (guesser + 2 hinter), con compagni visibili nel profilo.
-5. **PWA**: tenere `manifest.ts`, **buttare tutte le notifiche push**.
-6. **Upgrade aggressivo**: ecosistema al latest stabile + **next-auth v4 → v5 (Auth.js)**.
-7. **Un solo `GameBoard`** condiviso (era Todo README: "modulare la pagina del gioco").
-8. **Docs**: `AGENTS.md`, `ARCHITECTURE.md`, `DESIGN.md` + spec in `docs/superpowers/specs/`. Test: **Vitest minimo** su logica critica.
-9. **Stile grafico**: intoccabile nelle scelte estetiche; polish solo responsive/stati di connessione (skill `impeccable` in Fase 6).
+5. **PWA**: tenere `manifest.ts`, **zero notifiche push** (già rimosse).
+6. **Auth v5 fatto** (next-auth@5.0.0-beta.32, pinnata — documentare in AGENTS.md).
+7. **Un solo `GameBoard` condiviso** ✅ fatto.
+8. **Docs**: `AGENTS.md`, `ARCHITECTURE.md`, `DESIGN.md` + spec in `docs/superpowers/specs/`. Test: Vitest ✅ (estendere con i test room in Fase 4).
+9. **Stile grafico intoccabile**; polish solo responsive/stati di connessione (skill `impeccable` in Fase 6).
 
 ---
 
-## 2. Fasi (ordine obbligatorio — ogni fase chiude con verifica verde)
+## 2. Fasi rimanenti (ordine obbligatorio — ogni fase chiude con verifica verde)
 
-### FASE 0 — Spec document
-1. Scrivi `docs/superpowers/specs/2026-09-01-speedyguesser-revival-design.md`: contesto (§0), decisioni (§1), architettura target, schema dati, flusso online, fasi. Self-review: zero TBD, zero contraddizioni, scope coerente.
-2. Commit: `docs: add revival design spec`.
-
-### FASE 1 — Pulizia + upgrade ecosistema + auth v5
-**1a. Dead code (in quest'ordine, build verde dopo ogni gruppo):**
-
-- `src/trpc/react.tsx`: rimuovi import `createWSClient`/`wsLink`, `WS_URL` (r.16-18) e il ramo subscription dello `splitLink` → resta solo `unstable_httpBatchStreamLink`
-- Elimina file: `generate-vapid-keys.js`, `public/sw.js`, `src/app/_components/profileContext.tsx` (aggiorna `navbar.tsx` che lo importa — passa la session direttamente)
-- `src/types/game.ts`: rimuovi `RoomWithPlayers` (tieni `StatsComponentProps`)
-- `src/app/_components/footer.tsx`: rimuovi regex `local|online` (r.14-16)
-- `src/env.js`: rimuovi `VAPID_*` (r.29-30 e mapping r.55)
-- `package.json`: rimuovi `next-pwa`, `@types/next-pwa`, `web-push`, `@types/web-push` (+ `pnpm remove`)
-- Fix typo B8
-
-**1b. Upgrade deps (ordine: core → periferici):**
-
-- `next` latest 15.x, `react`/`react-dom` **19** + `@types/react`/`@types/react-dom` 19 (le types nel progetto sono già 19 — incoerenza da sistemare), `@prisma/client`+`prisma` latest 6.x, `zod` 4, `@trpc/*` latest 11.x, `@tanstack/react-query` latest, `lucide-react` latest, `typescript` latest 5.x
-- ⚠️ **Contingency zod 4**: se tRPC v11 in uso non supporta zod 4 (verifica con `pnpm why zod` + changelog tRPC), resta su zod 3 latest e nota in AGENTS.md. Non forzare.
-- ⚠️ Radix/ui shadcn: porta i pacchetti `@radix-ui/*` all'ultimo (React 19 compat). Non toccare le classi/temi.
-- Rimuovi `tailwindcss-animate` **solo se** `src/styles/globals.css` non lo referenzia (verifica con grep prima).
-
-**1c. next-auth v5 (Auth.js) — la migrazione più delicata, isolata:**
-
-- Installa `next-auth@beta` (o ultima 5.x stabile — verifica con `pnpm view next-auth version`)
-- Rifai `src/server/auth.ts` → pattern v5: `authConfig` + `export const { handlers, auth, signIn, signOut } = NextAuth(authConfig)`; provider Discord+Google (env auto-lette `AUTH_DISCORD_ID` ecc.); `PrismaAdapter(db)`; callbacks `session` inietta `user.id` (come ora, r.42-48); **mantieni l'augmentation TS** di `Session.user.id`
-- `src/app/api/auth/[...nextauth]/route.ts`: `export const { GET, POST } = handlers`
-- Sostituisci **tutti** i `getServerSession(authOptions)` con `await auth()` (cercali con grep: `src/server/api/trpc.ts` context, `src/app/game/single/*`, `src/app/stats/*`, navbar)
-- `protectedProcedure`: legge la session dal context v5
-- `src/env.js`: `AUTH_SECRET` (server), `AUTH_URL` opzionale; Netlify richiede `AUTH_TRUST_HOST=true`
-- `.env.example` aggiornato di conseguenza (togli VAPID, NEXTAUTH_*, metti AUTH_*)
-- ✅ **Verifica Fase 1**: `pnpm build` + `pnpm lint` verdi; smoke: login Discord/Google in dev, offline play completo, single play completo, logout. Se login rotto → stop e fix prima di proseguire.
-
-### FASE 2 — GameBoard + bugfix offline/single
-**2a. `src/app/_components/game/GameBoard.tsx`** (nuovo, cuore del refactor):
-
-- Estrai la logica identica da `offline/play/page.tsx` (265 r.) e `single/[gameId]/GameClient.tsx` (244 r.): state `currentWordIndex, remainingTime, remainingPasses, wordRevealed, score, hasChosen, isProcessing, wordsData`
-- API:
-
-```ts
-type GameConfig = { language: string; timeLimit: number; pass: number }
-type WordResult = { word: string; status: "CORRECT" | "WRONG" | "PASSED" }
-type GameResult = { score: number; passUsed: number; mistakes: number; words: WordResult[] }
-
-<GameBoard
-  words={Word[]}
-  config={GameConfig}
-  onFinish={(result: GameResult) => void}
-  allowRestart?: boolean />   // solo offline true
-```
-
-- Logica pura estraibile in `src/lib/game-logic.ts` per i test: `applyVerdict(state, "CORRECT"|"WRONG"|"PASS") → newState`, `isRoundOver(state)`, `computeRemaining(startedAt, timeLimit, now)` — **niente side effects qui**
-- Fix B5 qui: `onFinish` chiamato una sola volta con guard ref (`finishedRef.current`)
-- **2b. Vista Hinter** (`HinterView`): mostra parola corrente + timer, zero bottoni — servirà a Fase 4; implementarla ora dentro GameBoard (render condizionato da prop `role?: "guesser" | "hinter"`, default guesser)
-
-**2c. Adatta i due consumatori:**
-
-- `offline/play/page.tsx`: ~20 righe, usa GameBoard con restart
-- `single/[gameId]/GameClient.tsx`: usa GameBoard; `onFinish` → `updateGameResults.mutate()` poi `router.push(/stats/${gameId})` — **fuori dal useEffect**, dentro il callback di fine round
-
-**2d. Bugfix server:**
-
-- B1: `getGameWords` → `where: { gameId }`
-- B2: `stats/[gameId]/page.tsx` → `params: Promise<{ gameId: string }>` + `await` (specchio di `single/[gameId]/page.tsx:7-9`)
-- B3: redirect → `/api/auth/signin`
-- B4: `updateGameResults` in `db.$transaction` con `upsert` su GameWord (`where: { gameId_order: { gameId, order } }` — c'è già l'unique composite)
-- B6/B7: **elimina** le 3 procedure `*GameState` da `game.ts` + **drop table `GameState`** con `prisma migrate dev --name drop_game_state` (rimuovi anche relation da schema `Game.gameStates`)
-- ✅ **Verifica Fase 2**: Vitest setup (`pnpm add -D vitest`, script `"test": "vitest run"`) + test di `applyVerdict`/`computeRemaining` (casi: pass esauriti, doppio verdict, tempo 0) passano; smoke offline (restart incluso) e single (salvataggio una sola volta, stats mostra lista parole — verifica B1/B2 risolti).
-
-### FASE 3 — Turso + Netlify MVP
-**3a. Turso (richiede interazione utente — guia e aspetta i valori):**
+### FASE 3 — Turso + Netlify MVP (⚡ richiede interazione utente)
+**3a. Turso (chiedi all'utente prima di toccare il suo account):**
 
 ```bash
 turso db create speedyguesser
@@ -137,13 +71,12 @@ const adapter = new PrismaLibSQL({ url: env.DATABASE_URL, authToken: env.DATABAS
 export const db = new PrismaClient({ adapter }) // NO accelerate, solo adapter
 ```
 
-  (Pattern HMR singleton già presente va mantenuto.)
-- Schema `url = env("DATABASE_URL")`: in dev punta al Turso remoto (deciso: un solo DB anche in dev — free tier enorme). Migrazioni: sul nuovo DB vuoto → `pnpm prisma migrate deploy` (le migration.sql esistenti sono SQL generico compatibile). Se attrito → fallback: `prisma db push` + baseline (`prisma migrate diff --from-empty --to-schema-datamodel --script > baseline.sql`) e seed. **Nota executor**: chiedi all'utente prima di toccare il suo account Turso.
-- Seed: `pnpm prisma db seed` (232 parole IT/EN da `prisma/data/*.json`)
+  (Pattern HMR singleton già presente in `src/server/db.ts` va mantenuto.)
+- Schema `url = env("DATABASE_URL")` → in dev punta al Turso remoto (deciso: un solo DB anche in dev). Sul DB vuoto → `pnpm prisma migrate deploy` (le migration.sql esistenti sono SQL generico compatibile). Se attrito → fallback `prisma db push` + baseline (`prisma migrate diff --from-empty --to-schema-datamodel --script > baseline.sql`) e seed.
+- ⚠️ `src/env.js`: `DATABASE_URL: z.string().url()` — verificare che `libsql://...` passi la validazione (dovrebbe: è un URL valido). Aggiungere `DATABASE_AUTH_TOKEN: z.string()` al server schema + runtimeEnv + `.env.example`.
+- Seed: `pnpm prisma db seed` (232 parole IT/EN da `prisma/data/*.json`).
 
 **3b. Netlify:**
-
-- `netlify.toml`:
 
 ```toml
 [build]
@@ -153,9 +86,10 @@ export const db = new PrismaClient({ adapter }) // NO accelerate, solo adapter
   package = "@netlify/plugin-nextjs"
 ```
 
+- `netlify.toml` come sopra (+ `pnpm add -D @netlify/plugin-nextjs`).
 - Env su Netlify: `DATABASE_URL`, `DATABASE_AUTH_TOKEN`, `AUTH_SECRET`, `AUTH_DISCORD_ID/SECRET`, `AUTH_GOOGLE_ID/SECRET`, `AUTH_TRUST_HOST=true`
-- OAuth console (Discord/Google): aggiungi redirect URI `https://<netlify-domain>/api/auth/callback/{discord|google}` — **richiede azione manuale utente, chiedila al momento**
-- ✅ **Verifica Fase 3**: deploy preview (o deploy manuale via `netlify deploy`) con login OAuth funzionante sul domain Netlify + offline/single giocabili da remoto.
+- OAuth console (Discord/Google): aggiungere redirect URI `https://<netlify-domain>/api/auth/callback/{discord|google}` — **azione manuale utente, chiedere al momento, non inventare URL**.
+- ✅ **Verifica Fase 3**: deploy preview (o `netlify deploy`) con login OAuth funzionante sul domain Netlify + offline/single giocabili da remoto.
 
 ### FASE 4 — Multiplayer online (feature mai finita)
 **4a. Schema (migration `reforge_room_multiplayer`):**
@@ -192,7 +126,9 @@ model RoomPlayer {
 }
 ```
 
-- `Game`: tiene `roomId @unique` già esistente; `user` = guesser per partite online (owner per single); `gameType: "ONLINE"`
+- Stato attuale schema: `Room` ha già `code`, `gameType`, `status`, players, game — va riforgiato (rimuovere `gameType`, `updatedAt`; aggiungere `hostUserId/host`, `version`, `@@index`); `RoomPlayer` ha già `role`/`userId`/`roomId` — aggiungere `isReady`, `lastSeenAt`, `onDelete: Cascade`, index.
+- `Game`: tiene `roomId @unique` già esistente; per online `user` = guesser (owner per single); `gameType: "ONLINE"`.
+- ⚠️ Su Turso: `prisma migrate dev` dopo lo switch — oppure `prisma migrate diff` per generare lo SQL e `migrate deploy`.
 
 **4b. `src/server/api/routers/room.ts`** — tutte `protectedProcedure`, check membro/host via helper `assertMember(roomId, userId)`:
 
@@ -202,14 +138,14 @@ model RoomPlayer {
 | `joinRoomByCode({code})` | room WAITING, <3 players, se già membro ritorna la room (idempotente, per il link invito); altrimenti crea RoomPlayer; `version++` |
 | `setRole({roomId, role})` | GUESSER max 1, HINTER max 2 (count role attuali); cambio ruolo → `isReady=false`; `version++` |
 | `setReady({roomId, isReady})` | toggle; `version++` |
-| `startGame({roomId})` | **solo host**; valida: 2H+1G assegnati, tutti `isReady`; genera 50 parole random (estrai la query random di `getRandomWords` in helper riutilizzabile — nota: sostituire il loop a 1000 tentativi con shuffle in memoria delle 232 parole: banale e corretto); crea Game `status PLAYING, gameType ONLINE, startedAt null, score 0` + GameWord rows (order 0..49); room.status=PLAYING; `version++` |
+| `startGame({roomId})` | **solo host**; valida: 2H+1G assegnati, tutti `isReady`; genera 50 parole random (estrai la query random di `getRandomWords` in helper riutilizzabile — sostituire il loop a 1000 tentativi con shuffle in memoria delle 232 parole: banale e corretto); crea Game `status PLAYING, gameType ONLINE, startedAt now, score 0` + GameWord rows (order 0..49); room.status=PLAYING; `version++` |
 | `startRound({roomId})` | **solo GUESSER**; imposta `Game.startedAt = now()` (il timer parte QUI, non all'avvio host) e rivela parola 0; `version++` |
-| `submitAnswer({roomId, verdict})` | **solo GUESSER della room PLAYING con startedAt**; verdict ∈ CORRECT/WRONG/PASS; PASS richiede `passUsed < room.pass`; aggiorna Game (`score/mistakes/passUsed`) + GameWord status della parola corrente (già persistita — crash-safe) + avanza index; se `computeRemaining ≤ 0` → chiama stessa logica di finish; `version++` |
+| `submitAnswer({roomId, verdict})` | **solo GUESSER della room PLAYING con startedAt**; verdict ∈ CORRECT/WRONG/PASSED; PASSED richiede `passUsed < room.pass`; aggiorna Game (`score/mistakes/passUsed`) + GameWord status della parola corrente (già persistita — crash-safe) + avanza index; se `computeRemaining ≤ 0` → chiama stessa logica di finish; `version++` |
 | `finishRound({roomId})` | timer scaduto o guesser finale: Game.status=FINISHED, `endedAt`, room.status=FINISHED; `version++` (parole già salvate progressivamente da submitAnswer) |
 | `leaveRoom({roomId})` | elimina RoomPlayer; se room vuota o host esce e status WAITING → ABANDONED; `version++` |
 | `getRoom({roomId})` | snapshot: room + players (con user nome/avatar, online=lastSeenAt<10s) + game + currentWordIndex — usato da lobby e round |
 
-**Presenza e abbandono (niente cron)**: il loop SSE (4c) aggiorna `lastSeenAt` del richiedente ogni ~5s; ogni accesso a una room WAITING con nessun `lastSeenAt` recente da >60s → marca ABANDONED (lazy cleanup dentro `getRoom`/SSE start).
+**Presenza e abbandono (niente cron)**: il loop SSE (4c) aggiorna `lastSeenAt` del richiedente ogni ~5s; ogni accesso a una room WAITING con nessun `lastSeenAt` recente da >60s → ABANDONED (lazy cleanup dentro `getRoom`/SSE start).
 
 **4c. SSE endpoint `src/app/api/rooms/[roomId]/events/route.ts`:**
 
@@ -217,21 +153,22 @@ model RoomPlayer {
 - `ReadableStream`: loop `setInterval` ~300ms: leggi `Room` (con players+game+score) — se `version > lastSentVersion` → `controller.enqueue("data: <JSON snapshot>\n\n")`; ogni ~5s update `lastSeenAt` del richiedente; a ~55s → enqueue `event: reconnect` e `controller.close()` (EventSource del browser riconnette da solo)
 - Snapshot JSON = payload di `getRoom` (riusa la stessa funzione di build snapshot — single source of truth)
 - **Client hook `src/trpc/use-room-events.ts`**: `new EventSource(/api/rooms/${roomId}/events)` → on message → `queryClient.setQueryData(["room", roomId], snapshot)` (no refetch: il server pusha lo snapshot completo già pronto — più pigro e corretto di invalidation+refetch); on error/reconnect → stato `reconnecting` per la UI
+- ⚠️ Route handler Next: `export const dynamic = 'force-dynamic'` e headers `Content-Type: text/event-stream`, `Cache-Control: no-cache, no-transform`, `Connection: keep-alive`.
 
-**4d. Pagine (tutte sotto `/game/online`, stile esistente — riusa SelectionForm, buttons, dialog):**
+**4d. Pagine (tutte sotto `/game/online`, stile esistente — riusa SelectionForm, buttons, dialog, GameTimer/WordCard/ScoreBar da `GameBoard.tsx`):**
 
 - `src/app/game/online/page.tsx`: due azioni — **Crea stanza** (SelectionForm compattato → `createRoom` → redirect lobby) e **Entra con codice** (`input-otp` 4 cifre → `joinRoomByCode`)
 - `src/app/game/online/join/[code]/page.tsx`: link invito → auth → `joinRoomByCode` → redirect lobby (se non loggato: redirect a `/api/auth/signin?callbackUrl=...`)
 - `src/app/game/online/room/[roomId]/page.tsx`: **lobby live** — lista 3 slot con presenza online (grigio=offline), ognuno seleziona ruolo (bottoni HINTER/GUESSER, disabilitati se slot pieno) + **Pronto**; host vede **Avvia** solo quando 2H+1G tutti ready; se non pronto vede "in attesa…"
-- `src/app/game/online/room/[roomId]/play/page.tsx`: dopo `startGame` → countdown 3-2-1 condiviso (calcolato da timestamp ricevuto via SSE) → guesser chiama `startRound` → **GuesserView**: GameBoard in modalità guesser con stato **esterno** (score/index da SSE — non riusa lo state interno del GameBoard: per online riusa solo i pezzi presentazionali `GameTimer`, `WordCard`, `ScoreBar` estratti da GameBoard) e i 3 bottoni chiamano `submitAnswer`; **HinterView**: parola corrente + timer, zero interazione
+- `src/app/game/online/room/[roomId]/play/page.tsx`: dopo `startGame` → countdown 3-2-1 condiviso (calcolato da timestamp ricevuto via SSE) → guesser chiama `startRound` → **GuesserView**: usa solo i pezzi presentazionali `GameTimer`, `WordCard`, `ScoreBar` (stato esterno: score/index da SSE) con 3 bottoni che chiamano `submitAnswer`; **HinterView**: `role="hinter"` del GameBoard (parola corrente + timer, zero interazione)
 - Finale: room FINISHED → tutti redirect a stats (Fase 5 abilita l'accesso per i membri)
-- ✅ **Verifica Fase 4**: test Vitest su helper room (`canStart`: 2H+1G ready; `nextCode` collision; `applyVerdict` già testato); smoke **3 tab browser** (2 finestre + 1 incognito con account diversi se possibile): create → join ×2 → ruoli → ready ×3 → avvia → countdown → round completo (correct/wrong/pass, pass esaurito) → timer 0 → tutti sul finale. Verifica riconnessione SSE: killa la connessione (devtools) e conferma re-sync.
+- ✅ **Verifica Fase 4**: test Vitest su helper room (`canStart`: 2H+1G ready; `nextCode` collision; `applyVerdict` già testato); smoke **3 tab browser**: create → join ×2 → ruoli → ready ×3 → avvia → countdown → round completo (correct/wrong/pass, pass esaurito) → timer 0 → tutti sul finale. Verifica riconnessione SSE: killa la connessione (devtools) e conferma re-sync.
 
 ### FASE 5 — Stats online
 - `getUserLastGames`: `OR: [{ userId: me }, { room: { players: { some: { userId: me } } } }]` — include partite di squadra
 - `getUserStatistics`: idem aggregate (giocate = own + room games; best score = max)
 - `/stats/[gameId]` page: autorizzazione estesa — `game.user.id === me` **oppure** membro di `game.room.players`; UI stats mostra i compagni (da `RoomPlayer.user`) per partite online
-- `profilePage.tsx`: decommenta il bottone "Dettagli" (r.49-58, ora fattibile)
+- `profilePage.tsx`: decommenta il bottone "Dettagli" (r.49-58)
 - ✅ Verifica: smoke profilo con 1 single + 1 room game.
 
 ### FASE 6 — UI polish (skill `impeccable`)
@@ -242,10 +179,10 @@ model RoomPlayer {
 - ⚠️ Vincolo: **non cambiare** palette (`--color-main #ff7800` ecc. in `src/styles/globals.css`), font Jost, varianti bottoni — solo layout/UX
 
 ### FASE 7 — Docs finali + chiusura
-- `AGENTS.md`: comandi (`pnpm dev/build/lint/test`, prisma, turso), convenzioni (tRPC router pattern, server-only boundary, zod input, protectedProcedure obbligatorio per dati utente), mappa aree (`src/app/game/*`, `src/server/api/routers/*`), regola "ogni mutation room fa `version++`", workflow git (commit piccoli, lint-staged già attivo con husky)
+- `AGENTS.md`: comandi (`pnpm dev/build/lint/test`, prisma, turso), convenzioni (tRPC router pattern, server-only boundary, zod input, protectedProcedure obbligatorio per dati utente), mappa aree (`src/app/game/*`, `src/server/api/routers/*`), regola "ogni mutation room fa `version++`", workflow git (commit piccoli, lint-staged già attivo con husky), **pinni attuali**: next-auth@5.0.0-beta.32, zod 4 OK con tRPC 11.18
 - `ARCHITECTURE.md`: stack, diagramma flusso SSE+mutation, schema DB, timer-by-timestamp, **upgrade path Pusher** (sostituire hook, DB invariato), perché NO WebSocket su serverless
 - `DESIGN.md`: palette (main `#ff7800`, dark, second, third, light da `globals.css`), Jost, componenti shadcn custom (`personal*` variants), regole: niente nuovi colori senza tema, pattern Dialog+VisuallyHidden, tono microcopy EN
-- Spec final review: confronta `docs/superpowers/specs/...` con ciò che è stato costruito, aggiorna deviazioni
+- Spec final review: confronta `docs/superpowers/specs/2026-09-01-speedyguesser-revival-design.md` con ciò che è stato costruito, aggiorna **le 4 deviazioni elencate in §0**
 - ✅ **Verifica finale globale**: `pnpm lint && pnpm build && pnpm test` verdi; grep zero-hit: `wsLink|VAPID|next-pwa|web-push|GameState` in `src/` + `next.config.js` + `package.json`; smoke completo end-to-end su deploy Netlify.
 
 ---
@@ -259,18 +196,19 @@ AUTH_SECRET="..."
 AUTH_TRUST_HOST="true"        # solo su Netlify
 AUTH_DISCORD_ID / AUTH_DISCORD_SECRET
 AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET
-# ELIMINATE: NEXTAUTH_*, VAPID_*
+# GIÀ ELIMINATE: NEXTAUTH_*, VAPID_*
 ```
 
 ## 4. Rischi e contingenze (nota per l'executor)
 
-1. **auth v5 è beta/instabile di versione**: pinnare la versione esatta installata e documentarla in AGENTS.md; se v5 da problemi bloccanti → fallback documentato: resta v4 patched e annota in spec (decisione da riferire all'utente, non silenziosa)
-2. **zod 4 ↔ tRPC v11**: verificare compat; fallback zod 3 (annotare)
-3. **Turso/Netlify/OAuth richiedono azioni utente** (account, CLI login, redirect URIs): chiedi i valori al momento, non inventare URL
-4. **SSE su Netlify limit 60s**: la riconnessione è nativa del browser — NON implementare retry custom prima di verificare che quello nativo basta
-5. **Non reintrodurre WebSocket**: qualunque proposta "socket.io sarebbe meglio" è fuori scope (deciso)
-6. **Netlify + `next dev --turbopack`**: irrilevante in prod, ma se il build Netlify fallisce su turbopack flag usare `next build` standard
+1. **auth v5 beta pinnata** a `5.0.0-beta.32` — funziona (verificato con login Discord). Se aggiornarla, testare login prima di commit.
+2. **zod 4 ↔ tRPC v11**: compatibilità verificata in F1b (nessun problema). Non tornare a zod 3.
+3. **Turso/Netlify/OAuth richiedono azioni utente**: chiedi i valori al momento, non inventare URL.
+4. **SSE su Netlify limit 60s**: la riconnessione è nativa del browser — NON implementare retry custom prima di verificare che quello nativo basta.
+5. **Non reintrodurre WebSocket**: fuori scope (deciso).
+6. **Netlify + turbopack**: se il build Netlify fallisce sul flag, usare `next build` standard.
+7. **Windows/Prisma**: `prisma generate` con dev server attivo → EPERM (DLL lock). Fermare server → generate → riavviare.
 
 ## 5. Criteri di DONE
 
-✅ build/lint/test verdi · offline+single rifattorizzati su GameBoard senza duplicazione · stats raggiungibile con lista parole (B1/B2 chiusi) · zero procedure non autenticate sui dati utente · deploy Netlify con OAuth · partita online completa a 3 giocatori end-to-end su deploy · stats online a tutti e 3 · PWA installabile · docs (AGENTS/ARCHITECTURE/DESIGN + spec) presenti e coerenti col codice reale.
+✅ build/lint/test verdi · offline+single rifattorizzati su GameBoard senza duplicazione *(fatto)* · stats raggiungibile con lista parole (B1/B2 chiusi) *(fatto)* · zero procedure non autenticate sui dati utente *(fatto)* · **deploy Netlify con OAuth · partita online completa a 3 giocatori end-to-end su deploy · stats online a tutti e 3 · PWA installabile · docs (AGENTS/ARCHITECTURE/DESIGN + spec) presenti e coerenti col codice reale.**
