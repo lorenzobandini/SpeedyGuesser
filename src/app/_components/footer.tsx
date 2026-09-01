@@ -11,9 +11,6 @@ export default function Footer() {
     '/game/offline/play',
     /^\/game\/single\/[^/]+$/,
     /^\/stats\/[^/]+$/,
-    /^\/game\/local\/[^/]+$/,
-    /^\/game\/local\/room\/[^/]+$/,
-    /^\/game\/online\/[^/]+$/,
   ];
 
   const showExitButton = exitButtonPaths.some(pattern =>
@@ -21,7 +18,7 @@ export default function Footer() {
   );
 
   return (
-    <footer className="w/full flex items-center justify-between p-3">
+    <footer className="flex w-full items-center justify-between p-3">
       {showExitButton ? <ExitGameButton /> : pathname !== '/' && <BackButton />}
       <div className="grow" />
       <SettingsButton />

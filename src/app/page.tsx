@@ -11,7 +11,7 @@ export default function Home() {
           </h1>
           <Link href="game/">
             <Button variant="personal" size="xl">
-              <div className="text-3x">Play</div>
+              <div className="text-3xl">Play</div>
             </Button>
           </Link>
         </div>

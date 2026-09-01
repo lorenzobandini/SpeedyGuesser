@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '~/components/ui/button';
 import { FaMinus, FaPlus, FaPlay, FaPause } from 'react-icons/fa';
@@ -12,7 +12,15 @@ const validLanguages = ['IT', 'EN'];
 const validTimes = ['45', '60', '90'];
 const validPasses = ['0', '1', '3', '5'];
 
-export default function Game() {
+export default function GamePage() {
+  return (
+    <Suspense>
+      <Game />
+    </Suspense>
+  );
+}
+
+function Game() {
   const router = useRouter();
   const searchParams = useSearchParams();
   let language = searchParams?.get('language') ?? 'IT';
