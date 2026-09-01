@@ -19,7 +19,7 @@ export default async function GamePage({
     where: { id: gameId },
   });
 
-  if (!game || game.userId !== session.user.id) {
+  if (game?.userId !== session.user.id) {
     redirect('/');
   }
 

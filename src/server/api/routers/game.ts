@@ -90,7 +90,7 @@ export const gameRouter = createTRPCRouter({
         where: { id: gameId },
       });
 
-      if (!game || game.userId !== userId) {
+      if (game?.userId !== userId) {
         throw new Error('Gioco non trovato o accesso negato');
       }
 
@@ -120,7 +120,7 @@ export const gameRouter = createTRPCRouter({
         where: { id: gameId },
       });
 
-      if (!game || game.userId !== userId) {
+      if (game?.userId !== userId) {
         throw new Error('Gioco non trovato o accesso negato');
       }
 
@@ -171,7 +171,7 @@ export const gameRouter = createTRPCRouter({
         where: { id: gameId },
       });
 
-      if (!game || game.userId !== userId) {
+      if (game?.userId !== userId) {
         throw new Error('Gioco non trovato o accesso negato');
       }
 
