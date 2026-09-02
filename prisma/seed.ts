@@ -1,3 +1,4 @@
+import { PrismaLibSQL } from '@prisma/adapter-libsql';
 import { PrismaClient } from '@prisma/client';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
@@ -6,7 +7,11 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const prisma = new PrismaClient();
+const adapter = new PrismaLibSQL({
+  url: process.env.DATABASE_URL!,
+  authToken: process.env.DATABASE_AUTH_TOKEN!,
+});
+const prisma = new PrismaClient({ adapter });
 
 interface WordData {
   word: string;

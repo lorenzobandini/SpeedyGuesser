@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
+    // provider sqlite + driver adapter PrismaLibSQL: la connessione reale (libsql://) arriva dall'adapter (src/server/db.ts, prisma.config.ts, seed)
     provider = "sqlite"
-    url      = env("DATABASE_URL")
+    url      = "file:./db.sqlite"
 }
 
 model Room {

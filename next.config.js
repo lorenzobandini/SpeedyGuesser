@@ -5,6 +5,12 @@ if (!process.env.SKIP_ENV_VALIDATION) {
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
+  // libsql è nativo/node-only: non va bundlelato da webpack
+  serverExternalPackages: [
+    'libsql',
+    '@libsql/client',
+    '@prisma/adapter-libsql',
+  ],
   images: {
     remotePatterns: [
       {
@@ -17,6 +23,7 @@ const nextConfig = {
       },
     ],
   },
+  // eslint-disable-next-line @typescript-eslint/require-await -- la firma Next richiede Promise
   async headers() {
     return [
       {
