@@ -1,6 +1,6 @@
-# Piano d'esecuzione — SpeedyGuesser Revival (v1.2 — ripresa)
+# Piano d'esecuzione — SpeedyGuesser Revival (v1.3 — ripresa)
 
-> **Scopo del documento**: piano di ripresa per una nuova chat. Le Fasi 0-3 sono **completate e verificate** (sezione Stato); restano le Fasi 4-7. Il documento è autoconsistente: contesto, decisioni approvate, file esatti, verifiche e criteri di fine lavoro sono tutti qui.
+> **Scopo del documento**: piano di ripresa per una nuova chat. Le Fasi 0-4 sono **completate e verificate localmente** (sezione Stato; smoke 3-tab F4 pendente); restano le Fasi 5-7. Il documento è autoconsistente: contesto, decisioni approvate, file esatti, verifiche e criteri di fine lavoro sono tutti qui.
 > Spec di design (fonte di verità architetturale): `docs/superpowers/specs/2026-09-01-speedyguesser-revival-design.md`
 > Data: 2026-09-01 · Repo: `C:\Users\lboa\Desktop\SpeedyGuesser` (branch `main`, deploy Netlify attivo)
 
@@ -107,7 +107,9 @@ export const db = new PrismaClient({ adapter }) // NO accelerate, solo adapter
 - OAuth console (Discord/Google): aggiungere redirect URI `https://<netlify-domain>/api/auth/callback/{discord|google}` — **azione manuale utente, chiedere al momento, non inventare URL**.
 - ✅ **Verifica Fase 3**: deploy preview (o `netlify deploy`) con login OAuth funzionante sul domain Netlify + offline/single giocabili da remoto.
 
-### FASE 4 — Multiplayer online (feature mai finita)
+### FASE 4 — Multiplayer online ✅ COMPLETATA (committata: 82003f4 — vedi deviazioni sotto)
+> Codice completo: schema riforgiato + migration su Turso, router `room.ts` (10 procedure), SSE endpoint + hook `useRoomEvents`, pagine `/game/online` (index, join/[code], room/[roomId] lobby, play). Verifiche locali passate: lint ✅ tsc ✅ test 24/24 (room-logic: canStart/shuffle/isOnline/nextRoundCounters) ✅ build ✅.
+> ⚠️ **Smoke 3-tab browser + test riconnessione SSE PENDENTI** — da fare al ritorno dell'utente (create → join ×2 → ruoli → ready ×3 → avvia → countdown → round completo → timer 0 → redirect stats; kill connessione devtools → re-sync).
 **4a. Schema (migration `reforge_room_multiplayer`):**
 
 ```prisma
@@ -179,6 +181,14 @@ model RoomPlayer {
 - `src/app/game/online/room/[roomId]/play/page.tsx`: dopo `startGame` → countdown 3-2-1 condiviso (calcolato da timestamp ricevuto via SSE) → guesser chiama `startRound` → **GuesserView**: usa solo i pezzi presentazionali `GameTimer`, `WordCard`, `ScoreBar` (stato esterno: score/index da SSE) con 3 bottoni che chiamano `submitAnswer`; **HinterView**: `role="hinter"` del GameBoard (parola corrente + timer, zero interazione)
 - Finale: room FINISHED → tutti redirect a stats (Fase 5 abilita l'accesso per i membri)
 - ✅ **Verifica Fase 4**: test Vitest su helper room (`canStart`: 2H+1G ready; `nextCode` collision; `applyVerdict` già testato); smoke **3 tab browser**: create → join ×2 → ruoli → ready ×3 → avvia → countdown → round completo (correct/wrong/pass, pass esaurito) → timer 0 → tutti sul finale. Verifica riconnessione SSE: killa la connessione (devtools) e conferma re-sync.
+
+### Deviazioni dal piano v1.2 per la Fase 4 (da riportare in spec in Fase 7)
+1. **`prisma migrate dev` è rotto con engine JS + adapter** (P3006: replay delle vecchie migration sul shadow database fallisce). Workflow migration: `prisma migrate diff --from-schema-datamodel <old> --to-schema-datamodel <new> --script` → cartella manuale in `prisma/migrations/` → `prisma migrate deploy` (via adapter, direttamente su Turso). Due migration applicate: `20260902201728_reforge_room_multiplayer`, `20260902202140_game_round_started_at`.
+2. **Aggiunto `Game.roundStartedAt DateTime?`** (non previsto): distingue "partita avviata dall'host" (status PLAYING) da "round avviato dal guesser" (`startRound` imposta `roundStartedAt`, il timer client computa da lì via `computeRemaining`). `startedAt` resta il timestamp di creazione.
+3. **Snapshot SSE unico per tutti** (`buildRoomSnapshot` in `room.ts`, riesportato per la route SSE): la parola corrente viaggia anche verso il guesser (cheat via devtools accettato in MVP; upgrade path: payload per-ruolo).
+4. **Cleanup abbandoni**: lazy — `loadRoom()` marca ABANDONED le room WAITING con tutti i `lastSeenAt` >60s; `joinRoomByCode` rifiuta room piene/avviate/abbandonate ed è idempotente per membri esistenti.
+5. **SSE route**: primo snapshot inviato immediatamente all'apertura dello stream; heartbeat `lastSeenAt` ogni 5s; chiusura a 55s con `event: reconnect` (riconnessione nativa browser). Guard `busy` anti-overlap sui tick da 300ms.
+6. **Redirect finale a `/stats/[gameId]` già attivo**: gli HINTER riceveranno accesso negato fino a Fase 5 (estensione autorizzazione stats), come previsto dal piano.
 
 ### FASE 5 — Stats online
 - `getUserLastGames`: `OR: [{ userId: me }, { room: { players: { some: { userId: me } } } }]` — include partite di squadra
