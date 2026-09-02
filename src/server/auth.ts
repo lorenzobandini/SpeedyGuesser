@@ -37,6 +37,8 @@ export const authConfig: NextAuthConfig = {
     Discord({
       clientId: env.AUTH_DISCORD_ID,
       clientSecret: env.AUTH_DISCORD_SECRET,
+      // ponytail: email-based account linking (Discord email can be unverified — acceptable for this app)
+      allowDangerousEmailAccountLinking: true,
     }),
     Google({
       clientId: env.AUTH_GOOGLE_ID,
@@ -48,6 +50,7 @@ export const authConfig: NextAuthConfig = {
           response_type: 'code',
         },
       },
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
 };
