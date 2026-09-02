@@ -1,7 +1,10 @@
+import { existsSync } from 'fs';
+
 import { PrismaLibSQL } from '@prisma/adapter-libsql';
 import { defineConfig } from 'prisma/config';
 
-process.loadEnvFile();
+// .env esiste solo in locale; su CI le env arrivano dal provider
+if (existsSync('.env')) process.loadEnvFile();
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
