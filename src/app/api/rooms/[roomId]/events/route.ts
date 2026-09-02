@@ -46,6 +46,8 @@ export async function GET(
       request.signal.addEventListener('abort', close);
 
       const tick = async () => {
+        // DIAGNOSTIC: pure-timer keepalive, no DB — distinguishes frozen timers from hung queries
+        controller.enqueue(encoder.encode(': ka\n\n'));
         if (busy) return;
         busy = true;
         try {
