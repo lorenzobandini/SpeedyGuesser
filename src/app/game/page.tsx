@@ -33,6 +33,22 @@ export default async function SelectMode() {
               </Button>
             )}
           </div>
+          <div className="col-span-2 mt-8 text-center">
+            <h2 className="text-3xl font-bold">Multiplayer</h2>
+          </div>
+          <div className="col-span-2 flex justify-center">
+            {session ? (
+              <Link href="/game/online">
+                <Button variant={'personal'} size={'xl'}>
+                  Online
+                </Button>
+              </Link>
+            ) : (
+              <Button variant={'personal'} size={'xl'} disabled>
+                Online
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>

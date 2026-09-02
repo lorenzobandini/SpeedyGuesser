@@ -9,29 +9,35 @@ datasource db {
 }
 
 model Room {
-  id            String    @id @default(cuid())
-  code          Int       @unique
-  gameType      String    
-  status        String    @default("WAITING")
-  language      String
-  timeLimit     Int
-  pass          Int
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  players       RoomPlayer[]
-  game          Game?
+  id         String       @id @default(cuid())
+  code       Int          @unique
+  hostUserId String
+  host       User         @relation("RoomHost", fields: [hostUserId], references: [id])
+  language   String
+  timeLimit  Int
+  pass       Int
+  status     String       @default("WAITING") // WAITING | PLAYING | FINISHED | ABANDONED
+  version    Int          @default(0)
+  createdAt  DateTime     @default(now())
+  players    RoomPlayer[]
+  game       Game?
+
+  @@index([status, createdAt])
 }
 
 model RoomPlayer {
-  id            String    @id @default(cuid())
-  role          String    
-  user          User      @relation(fields: [userId], references: [id])
-  userId        String
-  room          Room      @relation(fields: [roomId], references: [id])
-  roomId        String
-  joinedAt      DateTime  @default(now())
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roomId     String
+  room       Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  role       String? // "HINTER" | "GUESSER" | null
+  isReady    Boolean  @default(false)
+  lastSeenAt DateTime @default(now())
+  joinedAt   DateTime @default(now())
 
   @@unique([userId, roomId])
+  @@index([roomId])
 }
 
 model Game {
@@ -48,6 +54,7 @@ model Game {
   mistakes      Int       @default(0)
   status        String    @default("WAITING")
   startedAt     DateTime  @default(now())
+  roundStartedAt DateTime?
   endedAt       DateTime?
   gameType      String
   words         GameWord[]
@@ -119,6 +126,7 @@ model User {
     accounts      Account[]
     sessions      Session[]
     rooms         RoomPlayer[]
+    hostedRooms   Room[]       @relation("RoomHost")
     games         Game[]
 }
 
