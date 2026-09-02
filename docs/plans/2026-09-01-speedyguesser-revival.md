@@ -1,8 +1,8 @@
-# Piano d'esecuzione — SpeedyGuesser Revival (v1.1 — ripresa)
+# Piano d'esecuzione — SpeedyGuesser Revival (v1.2 — ripresa)
 
-> **Scopo del documento**: piano di ripresa per una nuova chat. Le Fasi 0-2 sono **completate e verificate** (sezione Stato); restano le Fasi 3-7. Il documento è autoconsistente: contesto, decisioni approvate, file esatti, verifiche e criteri di fine lavoro sono tutti qui.
+> **Scopo del documento**: piano di ripresa per una nuova chat. Le Fasi 0-3 sono **completate e verificate** (sezione Stato); restano le Fasi 4-7. Il documento è autoconsistente: contesto, decisioni approvate, file esatti, verifiche e criteri di fine lavoro sono tutti qui.
 > Spec di design (fonte di verità architetturale): `docs/superpowers/specs/2026-09-01-speedyguesser-revival-design.md`
-> Data: 2026-09-01 · Repo: `C:\Users\lboa\Desktop\SpeedyGuesser` (branch `cleanup`, working tree pulita)
+> Data: 2026-09-01 · Repo: `C:\Users\lboa\Desktop\SpeedyGuesser` (branch `main`, deploy Netlify attivo)
 
 ---
 
@@ -19,19 +19,34 @@
 
 **Verifiche passate**: `pnpm lint` ✅ · `pnpm tsc --noEmit` ✅ · `pnpm test` (11/11) ✅ · `pnpm build` ✅ · login Discord funzionante su dev ✅ · smoke offline (gioco + restart) ✅ · smoke single (salvataggio 1× + stats con lista parole = B1/B2 chiusi) ✅
 
-### Deviazioni dal piano v1.0 (da riportare in spec in Fase 7)
+| Commit | Contenuto |
+|--------|-----------|
+| `8ea5b9b` | **F3a** — Turso (libSQL) via driver adapter: `@prisma/adapter-libsql@6.19.3` + `libsql@0.5.10`, `prisma/schema.prisma` resta `provider = "sqlite"` con `url` hardcoded `file:./db.sqlite` (ignorata a runtime), `src/server/db.ts` con `PrismaLibSQL`, `src/env.js` aggiunge `DATABASE_AUTH_TOKEN`, `prisma/seed.ts` con adapter. DB Turso `speedyguesser` creato, 7 migration applicate, seed 232 parole. `next.config.js`: `serverExternalPackages: ['libsql', '@libsql/client', '@prisma/adapter-libsql']` (build falliva senza). `.gitignore` + `db`/`db-wal` |
+| `5cec8e7` | **F3a fix** — `prisma.config.ts` (⚠️ non previsto dal piano v1.1, vedi deviazioni): `engine: 'js'` + adapter per `migrate deploy`/`db seed` direttamente su Turso; carica `.env` solo se presente (fix build Netlify CI) |
+| `0c0e6b6` | **F3b** — Netlify: sito `speedyguesser` linkato al repo GitHub (`main` = branch di deploy), env vars impostate via `netlify env:import .env` + `AUTH_TRUST_HOST=true`. Deploy git-based verde: **https://speedyguesser.netlify.app** — login OAuth Discord/Google funzionante su dominio Netlify ✅ |
+
+**Verifiche Fase 3 passate**: lint/tsc/test/build locali ✅ · migration+seed su Turso ✅ · dev server smoke (home + /api/auth/signin 200) ✅ · deploy Netlify `ready` + OAuth login OK (verificato utente) ✅
+
+### Deviazioni dal piano v1.1 per la Fase 3 (da riportare in spec in Fase 7)
+1. **`provider = "libsql"` NON esiste in Prisma 6.19** (P1012): si usa `provider = "sqlite"` + driver adapter `PrismaLibSQL` (GA). La `url` nello schema è `file:./db.sqlite` hardcoded e serve solo alla validazione CLI; la connessione reale (libsql://) arriva dall'adapter.
+2. **`prisma.config.ts`** (nuovo file): `engine: 'js'` + `adapter` (+ `experimental.adapter`) per applicare migration/seed direttamente a Turso dal CLI 6.x; `migrations.seed` spostato qui (rimosso blocco `package.json#prisma` deprecato). Carica `.env` con `process.loadEnvFile()` **solo se esiste** — altrimenti rompe il postinstall su CI.
+3. **Deploy Netlify git-based** (non `netlify deploy --build` locale: fallisce su Windows per EPERM symlink nello standalone output). Branch di deploy: `main` (fast-forwardato su `cleanup`).
+4. Turso CLI su Windows: installata in **WSL Ubuntu** (`~/.turso/turso`, no binario Windows per turso-cli 1.x). Le migration sono già tutte applicate: future migration = `pnpm exec prisma migrate dev` (locale, genera SQL) poi `pnpm exec prisma migrate deploy` (applica a Turso via adapter).
+
+### Note ambiente (per chi riprende)
+- **Deploy**: push su `main` → build automatica Netlify. `netlify watch` per aspettare; stato via API (config token in `%APPDATA%\netlify\Config\config.json`).
+- **Porta 3000**: container Docker `jevibet-app-1`/`jevibet-postgres-1` fermati con `--restart=no`. Riattivare: `docker start jevibet-app-1 jevibet-postgres-1`.
+- **Dev server**: `pnpm dev` su `http://localhost:3000`.
+- **Windows + Prisma**: `prisma generate` fallisce con EPERM (DLL lock) se il dev server è attivo → fermare il server, rigenerare, riavviare.
+- **pnpm `add pkg@major` non aggiorna il lockfile** se il range esistente già soddisfa: pinnare la versione esatta (`pnpm add pkg@x.y.z`).
+- `next lint` deprecato (warning a ogni run) — migrare a ESLint CLI in Fase 7 se si vuole.
+- `.env`: `DATABASE_URL="libsql://speedyguesser-lorenzobandini.aws-eu-west-1.turso.io"` + `DATABASE_AUTH_TOKEN` + `AUTH_*` (Discord/Google).
+
+### Deviazioni dal piano v1.0 Fasi 0-2 (da riportare in spec in Fase 7)
 1. **GameBoard senza prop `allowRestart`**: il restart offline avviene via remount (`key={restartKey}`) + `StatsComponent` renderizzato dal parent — stessa capacità, meno codice.
 2. **`GameWord.status` / outcome migrati a costanti EN** (`CORRECT`/`WRONG`/`PASSED`) ovunque (prima erano stringhe IT libere).
 3. `src/trpc/server.ts`: `headers()` ora è async (`await headers()`) — fix build blocker pre-esistente.
 4. `getRandomWords` mantiene ancora il loop a 1000 tentativi — l'estrazione helper + shuffle è rimandata a Fase 4 come da piano.
-
-### Note ambiente (per chi riprende)
-- **Porta 3000**: era occupata dai container Docker `jevibet-app-1`/`jevibet-postgres-1` (stack compose `jevibet`). Sono stati **fermati** e messi con `docker update --restart=no`. Per riattivarli: `docker start jevibet-app-1 jevibet-postgres-1` (e ri-prima `docker update --restart=always` se serve).
-- **Dev server**: `pnpm dev` su `http://localhost:3000` (env PORT non impostato).
-- **Windows + Prisma**: `prisma generate` fallisce con EPERM (DLL lock) se il dev server è attivo → fermare il server (`taskkill /PID <pid> /T /F` via `netstat -ano | findstr :3000`), rigenerare, riavviare.
-- **pnpm `add pkg@major` non aggiorna il lockfile** se il range esistente già soddisfa: pinnare la versione esatta (`pnpm add pkg@x.y.z`).
-- `next lint` deprecato (warning a ogni run) — migrare a ESLint CLI in Fase 7 se si vuole.
-- Variabili `.env` attuali: `DATABASE_URL="file:./db.sqlite"` + `AUTH_*` (Discord/Google). In Fase 3 la DATABASE_URL passerà a Turso.
 
 ---
 
@@ -51,7 +66,8 @@
 
 ## 2. Fasi rimanenti (ordine obbligatorio — ogni fase chiude con verifica verde)
 
-### FASE 3 — Turso + Netlify MVP (⚡ richiede interazione utente)
+### FASE 3 — Turso + Netlify MVP ✅ COMPLETATA (committata: 8ea5b9b, 0c0e6b6, 5cec8e7 — vedi tabella e deviazioni §0)
+> Eseguita con le deviazioni elencate sopra. Outcome: DB Turso con schema+seed, deploy Netlify git-based su `main`, OAuth Discord/Google funzionanti su dominio Netlify.
 **3a. Turso (chiedi all'utente prima di toccare il suo account):**
 
 ```bash
