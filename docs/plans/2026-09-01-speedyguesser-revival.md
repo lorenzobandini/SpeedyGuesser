@@ -195,6 +195,7 @@ model RoomPlayer {
 - ⚠️ Vincolo: **non cambiare** palette (`--color-main #ff7800` ecc. in `src/styles/globals.css`), font Jost, varianti bottoni — solo layout/UX
 
 ### FASE 7 — Docs finali + chiusura
+- `pnpm update` / audit: risolvere le **5 vulnerabilità Dependabot** segnalate da GitHub su `main` (2 high, 1 moderate, 2 low — https://github.com/lorenzobandini/SpeedyGuesser/security/dependabot); verificare login + build dopo gli upgrade
 - `AGENTS.md`: comandi (`pnpm dev/build/lint/test`, prisma, turso), convenzioni (tRPC router pattern, server-only boundary, zod input, protectedProcedure obbligatorio per dati utente), mappa aree (`src/app/game/*`, `src/server/api/routers/*`), regola "ogni mutation room fa `version++`", workflow git (commit piccoli, lint-staged già attivo con husky), **pinni attuali**: next-auth@5.0.0-beta.32, zod 4 OK con tRPC 11.18
 - `ARCHITECTURE.md`: stack, diagramma flusso SSE+mutation, schema DB, timer-by-timestamp, **upgrade path Pusher** (sostituire hook, DB invariato), perché NO WebSocket su serverless
 - `DESIGN.md`: palette (main `#ff7800`, dark, second, third, light da `globals.css`), Jost, componenti shadcn custom (`personal*` variants), regole: niente nuovi colori senza tema, pattern Dialog+VisuallyHidden, tono microcopy EN
