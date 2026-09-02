@@ -17,10 +17,12 @@ const ROLE_LIMITS: Record<RoomRole, number> = { HINTER: 2, GUESSER: 1 };
 
 function PlayerSlot({
   player,
+  players,
   userId,
   roomId,
 }: {
   player: RoomSnapshot['players'][number] | undefined;
+  players: RoomSnapshot['players'];
   userId: string;
   roomId: string;
 }) {
@@ -36,8 +38,8 @@ function PlayerSlot({
     );
   }
 
-  const roleCount = (role: RoomRole) =>
-    player.role === role ? -1 : ROLE_LIMITS[role]; // own role never counts as taken
+  const takenByOthers = (role: RoomRole) =>
+    players.filter(p => p.userId !== player.userId && p.role === role).length;
 
   return (
     <div
@@ -75,7 +77,7 @@ function PlayerSlot({
                 size={'sm'}
                 variant={player.role === role ? 'default' : 'personal'}
                 disabled={
-                  roleCount(role) >= ROLE_LIMITS[role] || setRole.isPending
+                  takenByOthers(role) >= ROLE_LIMITS[role] || setRole.isPending
                 }
                 onClick={() => setRole.mutate({ roomId, role })}
                 className={
@@ -197,6 +199,7 @@ export default function RoomLobby({
             <PlayerSlot
               key={players[i]?.userId ?? `empty-${i}`}
               player={players[i]}
+              players={players}
               userId={userId}
               roomId={roomId}
             />
